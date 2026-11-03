@@ -1,0 +1,85 @@
+---
+route: /fees
+title: Fees
+description: Every fee you can pay on Stoker, who pays it, when, in what asset and who receives it, each figure read from the chain.
+---
+<div class="shell page-head"><div><h1>Fees</h1><p>Every fee, read from the chain. Half of what the platform collects on a coin's trades is its Creator's.</p></div></div>
+<div class="shell doc">
+  <nav aria-label="On this page">
+    <a href="#fees">Every fee</a>
+    <a href="#share">What the platform does with its share</a>
+  </nav>
+  <div>
+  <ol class="fee-list" id="fees">
+    <li id="create">
+      <h3>Creating a coin</h3><span class="fee-amount">No platform fee</span>
+      <p>Solana charges the launch transaction's network fee and the rent of the coin's accounts; the review on the launch form shows the figure. A First Buy pays a curve trade's fees like any trade, and a Reward Launch costs nothing more to create.</p>
+      <dl><div><dt>Who pays</dt><dd>The Creator</dd></div><div><dt>When</dt><dd>At launch</dd></div><div><dt>In</dt><dd>SOL</dd></div><div><dt>Who receives it</dt><dd>Solana</dd></div></dl>
+    </li>
+    <li id="graduation" data-fee-row="graduation">
+      <h3>Graduation Fee</h3><span class="fee-amount" data-fee="graduation"></span>
+      <p>Taken out of the Creator's earnings on the coin, never on top of them, from the next Creator Forward on until paid, and never more than the Creator is owed at the time. Each part is a graduation_fee entry on the Ledger.</p>
+      <dl><div><dt>Who pays</dt><dd>The Creator, from their earnings</dd></div><div><dt>When</dt><dd>Once the coin graduates</dd></div><div><dt>In</dt><dd>The coin's Quote Asset</dd></div><div><dt>Who receives it</dt><dd>The platform</dd></div></dl>
+    </li>
+    <li id="platform" data-fee-row="platform">
+      <h3>Platform Fee on the curve</h3><span class="fee-amount" data-fee="platform"></span>
+      <p>Half of it is forwarded to the coin's Creator as Creator Earnings, sent to their wallet with nothing to claim. The platform keeps the other half.</p>
+      <dl><div><dt>Who pays</dt><dd>The trader</dd></div><div><dt>When</dt><dd>Every curve trade</dd></div><div><dt>In</dt><dd>The coin's Quote Asset</dd></div><div><dt>Who receives it</dt><dd>The platform and the Creator</dd></div></dl>
+    </li>
+    <li id="creator" data-fee-row="creator">
+      <h3>Creator Fee on the curve</h3><span class="fee-amount" data-fee="creator"></span>
+      <p>LaunchLab's on-chain creator share. None on Stoker: Creators are paid through Creator Earnings instead.</p>
+      <dl><div><dt>Who pays</dt><dd>The trader</dd></div><div><dt>When</dt><dd>Every curve trade</dd></div><div><dt>In</dt><dd>The coin's Quote Asset</dd></div><div><dt>Who receives it</dt><dd>The Creator's LaunchLab vault</dd></div></dl>
+    </li>
+    <li id="raydiumCurve" data-fee-row="raydiumCurve">
+      <h3>Raydium's curve fee</h3><span class="fee-amount" data-fee="raydiumCurve"></span>
+      <p>The LaunchLab program's own fee, set by Raydium on the Quote Asset's config.</p>
+      <dl><div><dt>Who pays</dt><dd>The trader</dd></div><div><dt>When</dt><dd>Every curve trade</dd></div><div><dt>In</dt><dd>The coin's Quote Asset</dd></div><div><dt>Who receives it</dt><dd>Raydium</dd></div></dl>
+    </li>
+    <li id="referral" data-fee-row="referral">
+      <h3>Referral share</h3><span class="fee-amount" data-fee="referral"></span>
+      <p>Only where the Quote Asset's Raydium config allows a share fee. SOL's does; most others, every tokenized stock among them, allow none. Never on a pool trade.</p>
+      <dl><div><dt>Who pays</dt><dd>The trader</dd></div><div><dt>When</dt><dd>A curve trade opened through a referral link</dd></div><div><dt>In</dt><dd>The coin's Quote Asset</dd></div><div><dt>Who receives it</dt><dd>The referrer</dd></div></dl>
+    </li>
+    <li id="poolCreator" data-fee-row="poolCreator">
+      <h3>Pool creator fee</h3><span class="fee-amount" data-fee="poolCreator"></span>
+      <p>The platform is every graduated pool's creator and collects it. Raydium keeps a share at collection; half of what arrives is forwarded to the coin's Creator.</p>
+      <dl><div><dt>Who pays</dt><dd>The trader</dd></div><div><dt>When</dt><dd>Every pool trade</dd></div><div><dt>In</dt><dd>The asset going into the pool</dd></div><div><dt>Who receives it</dt><dd>The platform and the Creator</dd></div></dl>
+    </li>
+    <li id="pool" data-fee-row="pool">
+      <h3>Pool trade fee</h3><span class="fee-amount" data-fee="pool"></span>
+      <p>Raydium's CPMM fee. Part of it belongs to the pool's liquidity providers; every graduated pool's liquidity is locked for good with the platform holding its Fee Key, so that part reaches the platform.</p>
+      <dl><div><dt>Who pays</dt><dd>The trader</dd></div><div><dt>When</dt><dd>Every pool trade</dd></div><div><dt>In</dt><dd>The asset going into the pool</dd></div><div><dt>Who receives it</dt><dd>The platform and Raydium</dd></div></dl>
+    </li>
+    <li id="rewardTax">
+      <h3>Reward Tax</h3><span class="fee-amount">1%, 3% or 5% of every transfer</span>
+      <p>Only on a Reward Launch, at the rate its Creator fixed at launch, which nobody can change. Paid to the coin's holders in Reward Rounds.</p>
+      <dl><div><dt>Who pays</dt><dd>Whoever sends the coin</dd></div><div><dt>When</dt><dd>Every transfer</dd></div><div><dt>In</dt><dd>The coin</dd></div><div><dt>Who receives it</dt><dd>The coin's holders</dd></div></dl>
+    </li>
+    <li id="route">
+      <h3>Buying with SOL a coin paired with another asset</h3><span class="fee-amount">The swap's own fee, if any</span>
+      <p>The buy swaps SOL into the Quote Asset through Jupiter first, spending only what the swap is sure to deliver: up to 0.3% under the current price. Anything beyond stays in your wallet.</p>
+      <dl><div><dt>Who pays</dt><dd>The trader</dd></div><div><dt>When</dt><dd>A SOL buy of a coin not paired with SOL</dd></div><div><dt>In</dt><dd>SOL</dd></div><div><dt>Who receives it</dt><dd>Jupiter and its pools</dd></div></dl>
+    </li>
+    <li id="swap">
+      <h3>Swapping on the Swap page</h3><span class="fee-amount">0.5% of every swap</span>
+      <p>Jupiter's referral fee. Jupiter keeps a fifth of it; the platform receives the rest. Nothing is forwarded to a Creator: no coin is involved.</p>
+      <dl><div><dt>Who pays</dt><dd>The swapper</dd></div><div><dt>When</dt><dd>Every swap on the Swap page</dd></div><div><dt>In</dt><dd>The asset swapped</dd></div><div><dt>Who receives it</dt><dd>The platform and Jupiter</dd></div></dl>
+    </li>
+    <li id="network">
+      <h3>Network fees and rent</h3><span class="fee-amount">Solana's own</span>
+      <p>Every transaction pays Solana's fee, and one that opens an account pays its rent. Shown on every review before you sign.</p>
+      <dl><div><dt>Who pays</dt><dd>Whoever signs</dd></div><div><dt>When</dt><dd>Every transaction</dd></div><div><dt>In</dt><dd>SOL</dd></div><div><dt>Who receives it</dt><dd>Solana</dd></div></dl>
+    </li>
+  </ol>
+  <section class="section" id="share" aria-labelledby="share-title" style="padding-inline:0;background:none">
+    <div class="section-head"><h2 id="share-title">What the platform does with its share</h2></div>
+    <dl class="kv panel pad">
+      <div><dt>Forwarded to Creators</dt><dd>Half, within an hour</dd></div>
+      <div data-fee-row="burn"><dt>The Burn</dt><dd data-fee="burn"></dd></div>
+      <div data-fee-row="flywheel"><dt>The Flywheel</dt><dd data-fee="flywheel"></dd></div>
+      <div><dt>Swept to the treasury</dt><dd>The rest, hourly</dd></div>
+    </dl>
+  </section>
+  </div>
+</div>
