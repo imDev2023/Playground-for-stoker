@@ -410,3 +410,32 @@ a.chip:hover { border-color: var(--line-strong); }
 
 /* Grids whose children must shrink below their content's width. */
 .coin-main, .coin-grid > aside, .launch form, .trade, .preview, .swap { grid-template-columns: minmax(0, 1fr); }
+
+/* The pair, everywhere a coin appears: its picture with the asset's badge, and the asset in the accent. */
+.pair-tile { position: relative; display: inline-flex; flex: none; }
+.pair-badge { position: absolute; right: -4px; bottom: -4px; display: flex; padding: 2px; border-radius: 50%; background: var(--surface); }
+.pair-badge .tile { width: 16px; height: 16px; border-radius: 50%; font-size: 10px; background: var(--ink); color: var(--paper); }
+.tile-lg + .pair-badge { right: -6px; bottom: -6px; }
+.tile-lg + .pair-badge .tile { width: 26px; height: 26px; font-size: 15px; }
+.pair-quote { color: var(--gold); font-weight: inherit; }
+
+/* Before you buy: three marks under a coin's name, each with a tone dot. */
+.marks { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.marks li { display: inline-flex; align-items: center; gap: 7px; height: 26px; padding: 0 10px; border: 1px solid var(--line); border-radius: 999px; font-size: 13px; font-weight: 500; }
+.marks li::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--ink-3); }
+.mark-ok::before { background: var(--up) !important; }
+.mark-caution::before { background: var(--gold) !important; }
+.mark-down::before { background: var(--down) !important; }
+
+/* Trade panel and header pieces. */
+.slip { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 14px; font-weight: 500; }
+.slip .seg label { padding: 0 10px; height: 28px; font-size: 13px; }
+.quote-card .card-head { margin-bottom: 8px; }
+.quote-card .card-head > span:nth-child(2) { flex: 1; min-width: 0; }
+.quote-card .badge { margin-left: auto; }
+.bar-actions { display: flex; gap: 8px; }
+@media (max-width: 520px) {
+  .bar-actions .button { height: 34px; padding: 0 12px; font-size: 13px; }
+  .bar-row { gap: 12px; }
+}
+.quote-card .card-head > .tile, [data-assets] .cell-coin > .tile, .asset-tile { background: var(--ink); color: var(--paper); border-radius: 50%; }

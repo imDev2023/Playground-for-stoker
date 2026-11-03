@@ -35,7 +35,14 @@ export async function read(path) {
 // Formatting ---------------------------------------------------------------
 export const whole = (n) => n.toLocaleString("en-US");
 export const short = (n) => n.toLocaleString("en-US", n >= 10_000 ? { notation: "compact", maximumSignificantDigits: 3 } : { maximumFractionDigits: n < 10 ? 2 : 0 });
-export const price = (n) => n == null ? "" : n.toLocaleString("en-US", n >= 1 ? { maximumFractionDigits: 2 } : { maximumSignificantDigits: 4 });
+const SUBSCRIPT = "\u2080\u2081\u2082\u2083\u2084\u2085\u2086\u2087\u2088\u2089";
+/** A price as production writes it: four significant digits, and a run of four or more leading zeros counted in a subscript (0.0\u20882791). */
+export const price = (n) => {
+  if (n == null) return "";
+  const full = n.toLocaleString("en-US", n >= 1 ? { maximumFractionDigits: 2 } : { maximumSignificantDigits: 4, useGrouping: false });
+  const run = /^0\.(0{4,})(\d+)$/.exec(full);
+  return run ? `0.0${String(run[1].length).replace(/\d/g, (d) => SUBSCRIPT[d])}${run[2]}` : full;
+};
 export const pct = (bps) => `${(bps / 100).toLocaleString("en-US", { maximumFractionDigits: 3 })}%`;
 export const change = (c) => c == null ? ["", ""] : [`${(c * 100).toLocaleString("en-US", { maximumFractionDigits: 1, signDisplay: "exceptZero" })}%`, c > 0 ? "up" : c < 0 ? "down" : ""];
 export const ago = (iso) => {
@@ -62,6 +69,13 @@ export const link = (path) => {
 export const tile = (image, symbol, cls = "tile") =>
   image ? `<img class="${cls}" src="${esc(image)}" alt="" loading="lazy">` : `<span class="${cls}" aria-hidden="true">${esc((symbol ?? "?").slice(0, 1))}</span>`;
 
+/** A coin's picture with the asset it trades in as a badge on its corner: the pair, at a glance. */
+export const pairTile = (image, symbol, quote, cls = "tile") =>
+  `<span class="pair-tile">${tile(image, symbol, cls)}<span class="pair-badge" title="${esc(ticker(quote))}">${tile(quote?.logo, ticker(quote), "tile")}</span></span>`;
+
+/** A pair as text: the coin in ink, the asset it trades in in the accent. */
+export const pairName = (symbol, quote) => `${esc(symbol)}<span class="pair-quote">/${esc(ticker(quote))}</span>`;
+
 /** Fills a [data-figure] cell and shows it, with its section, only for a real, non-zero value. */
 export function figure(key, value, unit) {
   const el = $(`[data-figure="${key}"]`);
@@ -82,7 +96,7 @@ export function coinTable(table, launches, { compact = false } = {}) {
       const share = Math.min(1, Number(l.curve.raised) / Number(l.graduationTarget));
       const curve = l.graduation ? `<span class="badge badge-gold">Graduated</span>` : `<span class="progress mini"><span style="--value:${(share * 100).toFixed(1)}%"></span></span>`;
       return `<tr>
-        <td><a class="cell-coin" href="${link(`/coin/?mint=${l.mint}`)}">${tile(l.image, l.symbol)}<span><b>${esc(l.symbol)}<span class="pair-quote">/${esc(q)}</span></b><br><span>${esc(l.name)}</span></span></a></td>
+        <td><a class="cell-coin" href="${link(`/coin/?mint=${l.mint}`)}">${pairTile(l.image, l.symbol, l.quote)}<span><b>${pairName(l.symbol, l.quote)}</b><br><span>${esc(l.name)}</span></span></a></td>
         <td class="r">${l.market?.price != null ? `${price(l.market.price)} <span class="muted hide-sm">${esc(q)}</span>` : ""}</td>
         <td class="r ${dir}">${c}</td>
         <td class="r hide-sm">${l.market?.volume24h?.sol ? `${short(l.market.volume24h.sol)} SOL` : ""}</td>

@@ -1,5 +1,5 @@
 // One renderer per page, picked by <body data-page>. Each fills what the API answers and leaves the rest hidden.
-import { read, $, $$, show, esc, link, whole, short, price, pct, change, ago, shortAddress, ticker, day, tile, coinTable, figure } from "./lib.js";
+import { read, $, $$, show, esc, link, whole, short, price, pct, change, ago, shortAddress, ticker, day, tile, pairTile, pairName, coinTable, figure } from "./lib.js";
 
 const params = new URLSearchParams(location.search);
 const sol = (lamports) => Number(lamports) / 1e9;
@@ -63,12 +63,53 @@ pages.coins = async () => {
 
 pages.coin = async () => {
   const mint = params.get("mint");
-  const [l, platform] = await Promise.all([mint ? read(`/v1/launches/${mint}`) : null, read("/v1/platform")]);
+  const [l, platform, trust, holders, quotes] = mint
+    ? await Promise.all([read(`/v1/launches/${mint}`), read("/v1/platform"), read(`/v1/launches/${mint}/trust`), read(`/v1/launches/${mint}/holders`), read("/v1/quotes")])
+    : [];
   if (!l) return show($("[data-empty]"));
   const q = ticker(l.quote);
   document.title = `${l.symbol} / ${q} · Stoker`;
-  $("[data-coin-tile]").outerHTML = tile(l.image, l.symbol, "tile tile-lg");
-  $("[data-coin-pair]").textContent = `${l.symbol}/${q}`;
+  $("[data-coin-tile]").outerHTML = pairTile(l.image, l.symbol, l.quote, "tile tile-lg");
+  $("[data-coin-pair]").innerHTML = pairName(l.symbol, l.quote);
+
+  // Before you buy: what the Creator holds, who sniped the launch, and how much the ten largest wallets hold.
+  const marks = [];
+  if (holders) {
+    const c = holders.creator;
+    marks.push(c.status === "holding" ? ["ok", `Creator ${(c.share * 100).toFixed(1)}%`] : c.status === "sold" ? ["down", "Creator sold"] : ["none", "Creator 0%"]);
+  }
+  if (trust) {
+    const n = trust.snipers.wallets.length;
+    marks.push(n === 0 ? ["ok", "No snipers"] : ["caution", `${n} sniper${n === 1 ? "" : "s"}`]);
+  }
+  if (holders) {
+    const top = holders.holders.filter((h) => h.kind !== "curve" && h.kind !== "pool").slice(0, 10).reduce((s, h) => s + h.share, 0);
+    marks.push([top > 0.5 ? "caution" : "ok", `Top 10 ${(top * 100).toFixed(1)}%`]);
+  }
+  if (marks.length) {
+    $("[data-marks]").innerHTML = marks.map(([tone, text]) => `<li class="mark-${tone}">${esc(text)}</li>`).join("");
+    show($("[data-marks]"));
+  }
+
+  // The asset it trades in, with its risk labels.
+  const asset = quotes?.quotes.find((x) => x.mint === l.quote.mint);
+  if (asset) {
+    const card = $("[data-quote-card]");
+    card.href = link(`/asset/?mint=${asset.mint}`);
+    $("[data-quote-tile]").outerHTML = tile(asset.logo, asset.symbol, "tile asset-tile");
+    $("[data-quote-symbol]").textContent = `Paired with ${asset.symbol}`;
+    $("[data-quote-kind]").textContent = asset.name;
+    const cautions = (asset.labels ?? []).filter((x) => x.severity === "caution").length;
+    const labels = $("[data-quote-labels]");
+    labels.textContent = asset.labels === null ? "Not checked yet" : cautions ? `${cautions} risk label${cautions === 1 ? "" : "s"}` : "No risk labels";
+    if (cautions) labels.classList.add("badge-warn");
+    $("[data-quote-facts]").innerHTML = [
+      [`1 ${esc(asset.symbol)}`, asset.price?.usd ? `$${price(Number(asset.price.usd))}` : ""],
+      ["Liquidity", asset.liquidityUsd ? `$${short(asset.liquidityUsd)}` : ""],
+      ["Graduates at", asset.graduationTarget ? `${short(units(asset.graduationTarget.raw, asset.decimals))} ${esc(asset.symbol)}` : ""],
+    ].filter(([, v]) => v).map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join("");
+    show(card);
+  }
   $("[data-coin-name]").innerHTML = `${esc(l.name)} · <a class="link" href="${solscan("token", l.mint)}">Explorer</a>`;
   $("[data-coin-price]").textContent = l.market?.price != null ? `${price(l.market.price)} ${q}` : "";
   const [c, dir] = change(l.market?.change24h);
@@ -134,7 +175,10 @@ pages.coin = async () => {
     $("[data-estimate]").hidden = !ok;
     if (!ok) return;
     const net = amount * (1 - fees / 10_000);
-    $("[data-get]").textContent = side() === "buy" ? `${short(net / p)} ${l.symbol}` : `${price(net * p)} ${q}`;
+    const floor = 1 - Number(checked("slip")) / 10_000;
+    const buy = side() === "buy";
+    $("[data-get]").textContent = buy ? `${short(net / p)} ${l.symbol}` : `${price(net * p)} ${q}`;
+    $("[data-min]").textContent = buy ? `${short((net / p) * floor)} ${l.symbol}` : `${price(net * p * floor)} ${q}`;
     $("[data-fees]").textContent = pct(fees);
   };
   $("[data-trade]").addEventListener("change", presets);
@@ -150,7 +194,6 @@ pages.coin = async () => {
   // About.
   if (l.description) $("[data-coin-desc]").textContent = l.description; else $("[data-coin-desc]").remove();
   const facts = [
-    ["Paired with", `<a class="link" href="${link(`/asset/?mint=${l.quote.mint}`)}">${esc(q)}</a>`],
     ["Launch type", l.rewardTax ? `Reward Launch, ${pct(l.rewardTax.bps)}` : "Standard"],
     ["Creator earns", `<a class="link" href="${link("/fees")}">Half of what we collect</a>`],
     ["Launched", day(l.createdAt)],
@@ -228,7 +271,7 @@ pages.asset = async () => {
   const a = quotes.find((q) => q.mint === mint);
   if (!a) return show($("[data-empty]"));
   document.title = `${a.symbol} · Stoker`;
-  $("[data-asset-tile]").outerHTML = tile(a.logo, a.symbol, "tile tile-lg");
+  $("[data-asset-tile]").outerHTML = tile(a.logo, a.symbol, "tile tile-lg asset-tile");
   $("[data-asset-ticker]").textContent = a.symbol;
   $("[data-asset-name]").textContent = `${a.name} · ${KINDS[a.category]}`;
   const launch = $("[data-asset-launch]");
