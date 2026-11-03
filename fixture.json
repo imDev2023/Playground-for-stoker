@@ -1,0 +1,33 @@
+{
+  "/v1/quotes": {
+    "quotes": [
+      { "symbol": "SOL", "launchable": true },
+      { "symbol": "USDC", "launchable": true },
+      { "symbol": "USDT", "launchable": true },
+      { "symbol": "NVDAx", "launchable": true },
+      { "symbol": "SPYx", "launchable": true },
+      { "symbol": "TSLAx", "launchable": true },
+      { "symbol": "AAPLx", "launchable": true },
+      { "symbol": "GOOGLx", "launchable": true },
+      { "symbol": "BONK", "launchable": true },
+      { "symbol": "JUP", "launchable": true },
+      { "symbol": "WIF", "launchable": false }
+    ]
+  },
+  "/v1/stats": {
+    "since": "2026-10-15T00:00:00.000Z",
+    "launches": 1284,
+    "graduated": 37,
+    "volume24h": { "sol": 4821.6, "usd": null }
+  },
+  "/v1/launches?sort=trending&limit=5": {
+    "launches": [
+      { "mint": "fixture1", "name": "Fixture Ember", "symbol": "EMBER", "image": null, "quote": { "symbol": "SOL" }, "market": { "change24h": 0.482 } },
+      { "mint": "fixture2", "name": "Fixture Kiln", "symbol": "KILN", "image": null, "quote": { "symbol": "USDC" }, "market": { "change24h": 0.127 } },
+      { "mint": "fixture3", "name": "Fixture Bellows", "symbol": "BLWS", "image": null, "quote": { "symbol": "NVDAx" }, "market": { "change24h": -0.064 } },
+      { "mint": "fixture4", "name": "Fixture Flint", "symbol": "FLNT", "image": null, "quote": { "symbol": "SPYx" }, "market": { "change24h": 0 } },
+      { "mint": "fixture5", "name": "Fixture Cinder", "symbol": "CNDR", "image": null, "quote": { "symbol": "SOL" }, "market": { "change24h": null } }
+    ],
+    "nextOffset": null
+  }
+}

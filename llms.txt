@@ -1,0 +1,15 @@
+# Stoker
+
+> Launch a coin on Solana priced in the asset you pick: SOL, a stablecoin, a tokenized stock or any asset Raydium quotes. Coins trade on Raydium LaunchLab; creators get half of what the platform collects on their coin's trades.
+
+## Pages
+- [Launch a coin](https://stoker.markets/launch)
+- [Explore coins](https://stoker.markets/coins)
+- [Assets to pair with](https://stoker.markets/assets)
+- [Fees](https://stoker.markets/fees)
+- [API reference](https://stoker.markets/api)
+
+## API
+- GET https://api.stoker.markets/v1/quotes: assets a coin can be paired with
+- GET https://api.stoker.markets/v1/stats: coins launched, graduated, 24h volume
+- GET https://api.stoker.markets/v1/launches?sort=trending: coins, most traded first
