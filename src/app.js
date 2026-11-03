@@ -1,5 +1,5 @@
 // One renderer per page, picked by <body data-page>. Each fills what the API answers and leaves the rest hidden.
-import { read, $, $$, show, esc, link, whole, short, price, pct, change, ago, shortAddress, ticker, day, tile, pairTile, pairName, coinTable, figure } from "./lib.js";
+import { read, $, $$, show, esc, link, whole, short, price, pct, change, ago, shortAddress, ticker, day, tile, pairTile, pairName, coinTable, figure, watched } from "./lib.js";
 
 const params = new URLSearchParams(location.search);
 const sol = (lamports) => Number(lamports) / 1e9;
@@ -46,18 +46,26 @@ pages.coins = async () => {
   const render = () => {
     const q = $("[data-search]").value.trim().toLowerCase();
     const kind = checked("kind") ?? "all";
+    const onlyWatched = $("[data-watchlist]").checked;
+    const watch = watched();
     const rows = all
       .filter((l) => !q || [l.name, l.symbol, l.mint].some((s) => s.toLowerCase().includes(q)))
       .filter((l) => kind === "all" || l.quote.category === kind)
+      .filter((l) => !onlyWatched || watch.has(l.mint))
       .sort(sorters[checked("sort")]);
     coinTable(table, rows);
     $('[data-live="board"]').hidden = rows.length === 0;
     $("[data-empty]").hidden = rows.length > 0 || all.length === 0;
+    $("[data-empty-text]").textContent = onlyWatched && !watch.size ? "Star a coin to watch it." : "Nothing matches.";
   };
+  if (location.hash === "#search") $("[data-search]").focus();
   if (!all.length) return;
   kindChips($("[data-kinds]"), [...new Set(all.map((l) => l.quote.category))], render);
   $("[data-search]").addEventListener("input", render);
   $("[data-sort]").addEventListener("change", render);
+  $("[data-watchlist]").addEventListener("change", render);
+  // Unstarring a coin while the watchlist is shown takes it off the list.
+  table.addEventListener("watch", () => { if ($("[data-watchlist]").checked) render(); });
   render();
 };
 
@@ -208,8 +216,10 @@ pages.coin = async () => {
 };
 
 pages.launch = async () => {
-  const quotes = (await read("/v1/quotes"))?.quotes.filter((q) => q.launchable) ?? [];
+  const [quoteList, platform] = await Promise.all([read("/v1/quotes"), read("/v1/platform")]);
+  const quotes = quoteList?.quotes.filter((q) => q.launchable) ?? [];
   const bySymbol = new Map(quotes.map((q) => [q.symbol, q]));
+  const dollars = (bps) => `$${((bps / 10_000) * 1000).toFixed(2)}`;
   const other = $("[data-other]");
   if (quotes.length > 3) {
     other.innerHTML = `<option value="">Choose</option>` + quotes.filter((q) => !["SOL", "USDC", "NVDAx"].includes(q.symbol)).map((q) => `<option>${esc(q.symbol)}</option>`).join("");
@@ -220,7 +230,19 @@ pages.launch = async () => {
     const sym = $("[data-ticker]").value.trim().toUpperCase() || "TICKER";
     const type = checked("type");
     $("[data-preview-tile]").textContent = sym.slice(0, 1);
-    $("[data-preview-pair]").textContent = `${sym}/${quote}`;
+    $("[data-preview-pair]").innerHTML = `${esc(sym)}<span class="pair-quote">/${esc(quote)}</span>`;
+    // Where the money goes on the curve, from the fees the chain has now: the Creator's half, the holders' tax, the rest.
+    if (platform) {
+      const tax = type === "standard" ? 0 : Number(checked("tax")) * 100;
+      const rows = [
+        ["To you", dollars(platform.creatorForward.curveBps + platform.creatorFeeBps)],
+        ...(tax ? [["To holders", dollars(tax)]] : []),
+        ["To the platform", dollars(platform.platformFeeBps - platform.creatorForward.curveBps)],
+        ["To Raydium", dollars(platform.raydiumFee.curveBps)],
+      ];
+      $("[data-flow-rows]").innerHTML = rows.map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join("");
+      show($("[data-flow]"));
+    }
     $("[data-preview-name]").textContent = $("[data-name]").value.trim() || "Your coin";
     $("[data-quote-name]").textContent = quote;
     $("[data-first-token]").textContent = quote;
@@ -271,7 +293,7 @@ pages.asset = async () => {
   const a = quotes.find((q) => q.mint === mint);
   if (!a) return show($("[data-empty]"));
   document.title = `${a.symbol} · Stoker`;
-  $("[data-asset-tile]").outerHTML = tile(a.logo, a.symbol, "tile tile-lg asset-tile");
+  $("[data-asset-tile]").outerHTML = tile(a.logo, a.symbol, "tile tile-xl asset-tile");
   $("[data-asset-ticker]").textContent = a.symbol;
   $("[data-asset-name]").textContent = `${a.name} · ${KINDS[a.category]}`;
   const launch = $("[data-asset-launch]");
@@ -432,4 +454,22 @@ pages.fees = async () => {
   }
 };
 
-await pages[document.body.dataset.page]?.();
+/** The strip under the header on every page but home: the platform's figures now, each shown only when real. */
+async function pulse() {
+  const [stats, revenue, quotes] = await Promise.all([read("/v1/stats"), read("/v1/revenue"), read("/v1/quotes")]);
+  const inSol = new Map((quotes?.quotes ?? []).map((q) => [q.mint, Number(q.price?.sol ?? 0)]));
+  const paid = (revenue?.totals ?? []).reduce((s, t) => s + units(t.creatorForwarded, t.asset.decimals) * (t.asset.symbol === "SOL" ? 1 : inSol.get(t.asset.mint) ?? 0), 0);
+  const items = [
+    ["24h volume", stats?.volume24h?.sol && `${short(stats.volume24h.sol)} SOL`],
+    ["Coins", stats?.launches && whole(stats.launches)],
+    ["Graduated", stats?.graduated && whole(stats.graduated)],
+    ["Paid to Creators", paid > 0 && `${short(paid)} SOL`],
+  ].filter(([, v]) => v);
+  if (!items.length) return;
+  $("[data-pulse]").innerHTML = items.map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join("");
+  show($('[data-live="pulse"]'));
+}
+
+const page = document.body.dataset.page;
+if (page !== "index") pulse();
+await pages[page]?.();

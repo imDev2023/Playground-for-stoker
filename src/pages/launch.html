@@ -19,9 +19,9 @@ description: Launch a coin on Solana priced in SOL, a stablecoin, a tokenized st
     <fieldset>
       <legend>Paired with</legend>
       <div class="options" data-pairs>
-        <label class="option"><input type="radio" name="quote" value="SOL" checked><span><b>SOL</b></span><span class="badge">Solana</span></label>
-        <label class="option"><input type="radio" name="quote" value="USDC"><span><b>USDC</b></span><span class="badge">Currencies</span></label>
-        <label class="option"><input type="radio" name="quote" value="NVDAx"><span><b>NVDAx</b></span><span class="badge">xStocks</span></label>
+        <label class="option"><input type="radio" name="quote" value="SOL" checked><span class="tile asset-tile" aria-hidden="true">S</span><span><b>SOL</b></span><span class="badge">Solana</span></label>
+        <label class="option"><input type="radio" name="quote" value="USDC"><span class="tile asset-tile" aria-hidden="true">U</span><span><b>USDC</b></span><span class="badge">Currencies</span></label>
+        <label class="option"><input type="radio" name="quote" value="NVDAx"><span class="tile asset-tile" aria-hidden="true">N</span><span><b>NVDAx</b></span><span class="badge">xStocks</span></label>
       </div>
       <label class="field" data-more-pairs hidden><span>Any other asset</span><select data-other></select></label>
     </fieldset>
@@ -63,16 +63,20 @@ description: Launch a coin on Solana priced in SOL, a stablecoin, a tokenized st
         <div><dt>Supply</dt><dd>1,000,000,000, fixed</dd></div>
         <div><dt>Graduates at</dt><dd data-preview-target>85 SOL raised</dd></div>
         <div><dt>Launch type</dt><dd data-preview-type>Standard</dd></div>
-        <div><dt>You earn</dt><dd><a class="link" href="/fees">Half of what we collect</a></dd></div>
-        <div><dt>Platform fee to launch</dt><dd>None</dd></div>
+        <div><dt>Launch cost</dt><dd>Network rent only</dd></div>
       </dl>
+      <section class="flow" aria-labelledby="flow-title" data-flow hidden>
+        <h3 id="flow-title">Per $1,000 traded</h3>
+        <dl class="kv" data-flow-rows></dl>
+        <a class="link note" href="/fees">Every fee</a>
+      </section>
       <ul class="checks">
         <li>Liquidity locked at graduation</li>
         <li>Metadata stored on Arweave</li>
         <li>Every payment on the ledger</li>
       </ul>
       <button class="button button-lg button-block" type="button">Connect wallet</button>
-      <p class="muted" style="font-size:13px">A coin can lose all of its value. Nothing here is investment advice.</p>
+      <p class="note">A coin can lose all of its value. Nothing here is investment advice.</p>
     </div>
   </aside>
 </div>

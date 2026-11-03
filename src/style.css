@@ -439,3 +439,32 @@ a.chip:hover { border-color: var(--line-strong); }
   .bar-row { gap: 12px; }
 }
 .quote-card .card-head > .tile, [data-assets] .cell-coin > .tile, .asset-tile { background: var(--ink); color: var(--paper); border-radius: 50%; }
+
+/* Ember and StonkFun borrowings: the live strip, the watch star, trend lines, the "/" hint, the money flow, asset logos. */
+.pulse { border-bottom: 1px solid var(--line); background: var(--surface); font-size: 13px; }
+.pulse-row { display: flex; gap: 28px; height: 38px; align-items: center; overflow-x: auto; scrollbar-width: none; white-space: nowrap; }
+.pulse-row div { display: flex; gap: 8px; }
+.pulse-row dt { color: var(--ink-3); }
+.pulse-row dd { font-weight: 600; }
+.star-cell { width: 36px; padding-right: 0 !important; }
+.star { display: grid; place-items: center; width: 28px; height: 28px; border: 0; border-radius: 6px; background: none; color: var(--ink-3); cursor: pointer; }
+.star::before { content: "☆"; font-size: 17px; line-height: 1; }
+.star[aria-pressed="true"] { color: var(--gold); }
+.star[aria-pressed="true"]::before { content: "★"; }
+.star:hover { background: var(--sunken); color: var(--ink); }
+.spark { display: block; width: 88px; height: 28px; fill: none; stroke: var(--ink-3); stroke-width: 1.5; }
+.spark polyline { vector-effect: non-scaling-stroke; }
+.spark.up { stroke: var(--up); }
+.spark.down { stroke: var(--down); }
+.search .kbd { position: absolute; right: 10px; top: 50%; translate: 0 -50%; padding: 2px 7px; border: 1px solid var(--line-strong); border-radius: 6px; font: 500 12px/1.2 var(--mono); color: var(--ink-3); pointer-events: none; }
+.search input:focus + .kbd { opacity: 0; }
+.flow { display: grid; gap: 4px; padding: 16px; border-radius: 10px; background: var(--sunken); }
+.flow h3 { font: 600 14px/1.3 var(--sans); }
+.flow .kv > div { padding: 8px 0; font-size: 14px; }
+.flow .note { margin-top: 6px; justify-self: start; }
+.option .asset-tile { width: 32px; height: 32px; font-size: 17px; }
+.tile-xl { width: 88px; height: 88px; border-radius: 22px; font-size: 46px; }
+.tile-xl.asset-tile { border-radius: 50%; }
+@media (max-width: 640px) { .tile-xl { width: 64px; height: 64px; font-size: 34px; } }
+.toolbar > .chip-pick { margin-left: auto; }
+@media (max-width: 640px) { .toolbar > .chip-pick { margin-left: 0; } }

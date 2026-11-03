@@ -6,7 +6,8 @@ description: Every coin launched on Stoker, by market cap, newest, 24h volume or
 <div class="shell page-head"><h1>Coins</h1></div>
 <div class="shell section" style="padding-top:0">
   <div class="toolbar">
-    <label class="search"><span class="visually-hidden">Search</span><input class="input" type="search" placeholder="Name, ticker or address" maxlength="64" data-search></label>
+    <label class="search"><span class="visually-hidden">Search</span><input class="input" type="search" id="search" placeholder="Name, ticker or address" maxlength="64" data-search><kbd class="kbd" aria-hidden="true">/</kbd></label>
+    <label class="chip chip-pick"><input type="checkbox" data-watchlist>Watchlist</label>
     <div class="seg" role="radiogroup" aria-label="Sort" data-sort>
       <label><input type="radio" name="sort" value="market_cap" checked>Market cap</label>
       <label><input type="radio" name="sort" value="new">Newest</label>
