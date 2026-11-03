@@ -1,0 +1,101 @@
+---
+route: /api
+title: Developers
+description: Stoker's public API: every read open, every launch and trade returned unsigned for your wallet to sign.
+---
+<div class="shell page-head"><h1>The API</h1></div>
+<div class="shell doc">
+  <nav aria-label="On this page">
+    <a href="#start">Quickstart</a><a href="#reading">Reading</a><a href="#preparing">Preparing transactions</a><a href="#signing">Sign, send, report</a>
+    <a href="#limits">Keys and limits</a><a href="#errors">Errors</a>
+  </nav>
+  <div class="endpoints">
+    <section class="section flush" id="start" aria-labelledby="start-title">
+      <div class="section-head"><h2 id="start-title">Quickstart</h2></div>
+      <pre class="code"><code>curl https://api.stoker.markets/v1/platform</code></pre>
+      <pre class="code gap-t" data-live="answer" hidden><code data-answer></code></pre>
+    </section>
+    <section class="section" id="reading" aria-labelledby="reading-title">
+      <div class="section-head"><h2 id="reading-title">Reading</h2><span class="badge">No key</span></div>
+      <div class="panel table-wrap"><table class="table"><tbody>
+        <tr><td><span class="method">GET</span></td><td><code>/platform</code></td><td class="muted">Cluster, addresses, Graduation Target, every fee and rate</td></tr>
+        <tr><td><span class="method">GET</span></td><td><code>/region</code></td><td class="muted">Your country and the features withheld there</td></tr>
+        <tr><td><span class="method">GET</span></td><td><code>/quotes</code></td><td class="muted">The Quote Registry: every asset, its price, target and labels</td></tr>
+        <tr><td><span class="method">GET</span></td><td><code>/quotes/:mint</code></td><td class="muted">One asset</td></tr>
+        <tr><td><span class="method">GET</span></td><td><code>/launches</code></td><td class="muted">The board: sort, q, quote, category, issuer, status, limit, offset</td></tr>
+        <tr><td><span class="method">GET</span></td><td><code>/launches/quotes</code></td><td class="muted">Assets that have coins, with counts and 24h volume</td></tr>
+        <tr><td><span class="method">GET</span></td><td><code>/launches/:mint</code></td><td class="muted">One coin: curve, graduation, reward tax, market, Copy Protection</td></tr>
+        <tr><td><span class="method">GET</span></td><td><code>/launches/:mint/trades</code></td><td class="muted">Its trades</td></tr>
+        <tr><td><span class="method">GET</span></td><td><code>/launches/:mint/candles</code></td><td class="muted">Its candles: 1m, 5m, 15m, 1h, 4h or 1d</td></tr>
+        <tr><td><span class="method">GET</span></td><td><code>/launches/:mint/holders</code></td><td class="muted">Its top holders</td></tr>
+        <tr><td><span class="method">GET</span></td><td><code>/launches/:mint/trust</code></td><td class="muted">Its Creator's record and snipers</td></tr>
+        <tr><td><span class="method">GET</span></td><td><code>/launches/:mint/quote</code></td><td class="muted">A trade quote: side, amount, slippage, payWith, referrer</td></tr>
+        <tr><td><span class="method">GET</span></td><td><code>/launches/:mint/airdrop</code></td><td class="muted">Its airdrop and who has been paid</td></tr>
+        <tr><td><span class="method">GET</span></td><td><code>/launches/:mint/rewards</code></td><td class="muted">Its Holder Rewards</td></tr>
+        <tr><td><span class="method">GET</span></td><td><code>/rewards/rules</code></td><td class="muted">The Holder Rewards rules</td></tr>
+        <tr><td><span class="method">GET</span></td><td><code>/rewards/rounds/:id</code></td><td class="muted">One Reward Round</td></tr>
+        <tr><td><span class="method">GET</span></td><td><code>/wallets/:address/rewards</code></td><td class="muted">A wallet's rewards</td></tr>
+        <tr><td><span class="method">GET</span></td><td><code>/creators/:address/earnings</code></td><td class="muted">A Creator's earnings</td></tr>
+        <tr><td><span class="method">GET</span></td><td><code>/creators/:address/forwards</code></td><td class="muted">Payments sent to a Creator</td></tr>
+        <tr><td><span class="method">GET</span></td><td><code>/stats</code></td><td class="muted">Coins launched, graduated, 24h volume</td></tr>
+        <tr><td><span class="method">GET</span></td><td><code>/revenue</code></td><td class="muted">Revenue by asset and day</td></tr>
+        <tr><td><span class="method">GET</span></td><td><code>/ledger</code></td><td class="muted">The Ledger</td></tr>
+        <tr><td><span class="method">GET</span></td><td><code>/burns</code></td><td class="muted">Burn and Flywheel</td></tr>
+        <tr><td><span class="method">GET</span></td><td><code>/announcements</code></td><td class="muted">Fee changes</td></tr>
+        <tr><td><span class="method">GET</span></td><td><code>/metadata/:mint.json</code></td><td class="muted">A coin's metadata, cached</td></tr>
+      </tbody></table></div>
+    </section>
+    <section class="section" id="preparing" aria-labelledby="preparing-title">
+      <div class="section-head"><h2 id="preparing-title">Preparing transactions</h2><span class="badge">Unsigned</span></div>
+      <div class="panel table-wrap"><table class="table"><tbody>
+        <tr><td><span class="method">POST</span></td><td><code>/launches/prepare</code></td><td class="muted">Build a launch (multipart)</td></tr>
+        <tr><td><span class="method">POST</span></td><td><code>/launches/check</code></td><td class="muted">Copy Protection verdict, per field</td></tr>
+        <tr><td><span class="method">GET</span></td><td><code>/launch-quote</code></td><td class="muted">First Buy preview</td></tr>
+        <tr><td><span class="method">POST</span></td><td><code>/launches/:mint/airdrop/prepare</code></td><td class="muted">Airdrop transactions</td></tr>
+        <tr><td><span class="method">POST</span></td><td><code>/trades/prepare</code></td><td class="muted">A buy or a sell</td></tr>
+        <tr><td><span class="method">POST</span></td><td><code>/transactions/:signature</code></td><td class="muted">Report a confirmed transaction</td></tr>
+      </tbody></table></div>
+    </section>
+    <section class="section" id="signing" aria-labelledby="signing-title">
+      <div class="section-head"><h2 id="signing-title">Sign, send, report</h2></div>
+      <pre class="code"><code>import { Connection, VersionedTransaction } from "@solana/web3.js";
+
+const api = "https://api.stoker.markets/v1";
+const prepared = await (await fetch(`${api}/trades/prepare`, {
+  method: "POST",
+  headers: { "content-type": "application/json" },
+  body: JSON.stringify({ mint, trader: wallet.publicKey.toBase58(), side: "buy", amount: "100000000", slippageBps: 100 }),
+})).json();
+
+const tx = VersionedTransaction.deserialize(Buffer.from(prepared.transaction, "base64"));
+tx.sign([wallet]);
+const connection = new Connection(rpcUrl, "confirmed");
+const signature = await connection.sendTransaction(tx);
+await connection.confirmTransaction({ signature, blockhash: tx.message.recentBlockhash, lastValidBlockHeight: prepared.lastValidBlockHeight }, "confirmed");
+await fetch(`${api}/transactions/${signature}`, { method: "POST" });</code></pre>
+    </section>
+    <section class="section" id="limits" aria-labelledby="limits-title">
+      <div class="section-head"><h2 id="limits-title">Keys and limits</h2></div>
+      <dl class="panel pad kv">
+        <div><dt>Without a key</dt><dd>300 requests a minute, 25 prepares</dd></div>
+        <div><dt>With a key</dt><dd>60 requests a minute, by default</dd></div>
+        <div><dt>Header</dt><dd><code>x-api-key</code></dd></div>
+        <div><dt>Your key's limits</dt><dd><code>GET /keys/me</code></dd></div>
+        <div><dt>Ask for a key</dt><dd><a class="link" href="mailto:info@stoker.markets">info@stoker.markets</a></dd></div>
+      </dl>
+    </section>
+    <section class="section" id="errors" aria-labelledby="errors-title">
+      <div class="section-head"><h2 id="errors-title">Errors</h2></div>
+      <dl class="panel pad kv errors">
+        <div><dt><code>400</code></dt><dd>The body or query isn't what the contract asks; details lists each issue.</dd></div>
+        <div><dt><code>401</code></dt><dd>An unknown or revoked key.</dd></div>
+        <div><dt><code>403</code></dt><dd>An airdrop from a wallet not allowed one.</dd></div>
+        <div><dt><code>404</code></dt><dd>No such coin, asset, round or key.</dd></div>
+        <div><dt><code>409</code></dt><dd>A name, ticker or image a protected coin already has.</dd></div>
+        <div><dt><code>422</code></dt><dd>Well-formed, but not admissible: an asset the curve rules don't admit at today's price, or a SOL buy with no route.</dd></div>
+        <div><dt><code>429</code></dt><dd>Past a rate limit; retry-after says how long to wait.</dd></div>
+        <div><dt><code>500, 503</code></dt><dd>Ours, or a dependency down for the moment. Try again in a minute.</dd></div>
+      </dl>
+    </section>
+  </div>
+</div>

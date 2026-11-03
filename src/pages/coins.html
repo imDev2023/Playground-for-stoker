@@ -1,0 +1,22 @@
+---
+route: /coins
+title: Explore
+description: Every coin launched on Stoker, by market cap, newest, 24h volume or nearest graduation.
+---
+<div class="shell page-head"><h1>Coins</h1></div>
+<div class="shell section" style="padding-top:0">
+  <div class="toolbar">
+    <label class="search"><span class="visually-hidden">Search</span><input class="input" type="search" placeholder="Name, ticker or address" maxlength="64" data-search></label>
+    <div class="seg" role="radiogroup" aria-label="Sort" data-sort>
+      <label><input type="radio" name="sort" value="market_cap" checked>Market cap</label>
+      <label><input type="radio" name="sort" value="new">Newest</label>
+      <label><input type="radio" name="sort" value="trending">Volume</label>
+      <label><input type="radio" name="sort" value="graduation">Near graduation</label>
+    </div>
+  </div>
+  <div class="chips" style="margin-bottom:20px" role="radiogroup" aria-label="Paired with" data-kinds hidden></div>
+  <div class="panel table-wrap" data-live="board" hidden><table class="table" data-coins></table></div>
+  <div class="band" data-empty hidden>
+    <p class="statement" data-empty-text>Nothing matches.</p>
+  </div>
+</div>

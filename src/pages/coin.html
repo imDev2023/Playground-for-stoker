@@ -1,0 +1,70 @@
+---
+route: /coin
+title: Coin
+description: A coin on Stoker: its price, its curve, its trades and holders, and every fact about it the chain records.
+---
+<div class="shell" data-live="coin" hidden>
+  <header class="coin-head">
+    <span data-coin-tile></span>
+    <div>
+      <h1 data-coin-pair></h1>
+      <p class="muted" data-coin-name></p>
+    </div>
+    <div class="coin-price"><b data-coin-price></b><span data-coin-change></span></div>
+  </header>
+
+  <div class="coin-grid">
+    <div class="coin-main">
+      <section class="panel pad" aria-label="Price">
+        <div class="section-head">
+          <dl class="inline-stats"><div><dt>Market cap</dt><dd data-coin-cap></dd></div><div><dt>24h volume</dt><dd data-coin-vol></dd></div></dl>
+          <div class="seg" role="radiogroup" aria-label="Interval" data-interval>
+            <label><input type="radio" name="iv" value="5m">5m</label><label><input type="radio" name="iv" value="15m" checked>15m</label><label><input type="radio" name="iv" value="1h">1h</label><label><input type="radio" name="iv" value="1d">1d</label>
+          </div>
+        </div>
+        <svg class="chart" viewBox="0 0 100 100" preserveAspectRatio="none" data-chart aria-hidden="true"></svg>
+      </section>
+
+      <section class="panel pad" aria-labelledby="curve-title">
+        <div class="curve-head"><h2 id="curve-title">Graduation</h2><span data-curve-pct></span></div>
+        <div class="progress"><span data-curve-bar></span></div>
+        <p class="note" data-curve-note></p>
+      </section>
+
+      <section class="panel" aria-label="Activity">
+        <div class="pad tabs">
+          <div class="seg" role="tablist" data-tabs>
+            <label><input type="radio" name="tab" value="trades" checked>Trades</label><label><input type="radio" name="tab" value="holders">Top holders</label>
+          </div>
+        </div>
+        <div class="table-wrap"><table class="table" data-activity></table></div>
+      </section>
+    </div>
+
+    <aside>
+      <form class="panel pad trade" data-trade onsubmit="return false">
+        <div class="seg" role="radiogroup" aria-label="Side">
+          <label><input type="radio" name="side" value="buy" checked>Buy</label><label><input type="radio" name="side" value="sell">Sell</label>
+        </div>
+        <label class="amount"><input inputmode="decimal" placeholder="0" aria-label="Amount" data-amount><span class="token" data-pay-token></span></label>
+        <div class="presets" data-presets></div>
+        <dl class="kv" data-estimate hidden>
+          <div><dt>You get about</dt><dd data-get></dd></div>
+          <div><dt>Fees</dt><dd><a class="link" href="/fees" data-fees></a></dd></div>
+        </dl>
+        <button class="button button-lg button-block" type="button">Connect wallet</button>
+      </form>
+
+      <section class="panel pad" aria-labelledby="about-title">
+        <h2 id="about-title" class="visually-hidden">About</h2>
+        <p data-coin-desc></p>
+        <dl class="kv" data-coin-facts></dl>
+      </section>
+    </aside>
+  </div>
+</div>
+
+<div class="shell band" data-empty hidden>
+  <p class="statement">This coin isn't here.</p>
+  <p class="actions"><a class="button button-lg" href="/coins">Explore coins</a></p>
+</div>

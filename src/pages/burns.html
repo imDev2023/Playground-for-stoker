@@ -1,0 +1,26 @@
+---
+route: /burns
+title: Burn and Flywheel
+description: How the platform's revenue buys and burns STOKER and the most traded graduated coins, every run on-chain.
+---
+<div class="shell page-head"><h1>Burn and Flywheel</h1><a class="arrow" href="/revenue">Stats</a></div>
+<div class="shell" data-live="figures" hidden>
+  <dl class="figures">
+    <div data-figure="revenue" hidden><dt>Revenue so far</dt><dd></dd></div>
+    <div data-figure="burn" hidden><dt>Spent on the Burn</dt><dd></dd></div>
+    <div data-figure="flywheel" hidden><dt>Spent on the Flywheel</dt><dd></dd></div>
+    <div data-figure="burned" hidden><dt>STOKER burned</dt><dd></dd></div>
+  </dl>
+</div>
+<section class="shell section" aria-labelledby="rule-title" data-live="rule" hidden>
+  <h2 id="rule-title" class="visually-hidden">The rule</h2>
+  <p class="lead" data-rule></p>
+</section>
+<section class="shell section" aria-labelledby="next-title" data-live="next" hidden>
+  <div class="section-head"><h2 id="next-title">The Flywheel's next picks</h2></div>
+  <div class="chips" data-next></div>
+</section>
+<section class="shell section" aria-labelledby="events-title" data-live="events" hidden>
+  <div class="section-head"><h2 id="events-title">Every buy and burn</h2></div>
+  <div class="panel table-wrap"><table class="table" data-events></table></div>
+</section>

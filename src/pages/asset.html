@@ -1,0 +1,29 @@
+---
+route: /asset
+title: Asset
+description: One asset a coin can be priced in: its price, its graduation target, its risk labels and the coins paired with it.
+---
+<div class="shell" data-live="asset" hidden>
+  <header class="coin-head">
+    <span data-asset-tile></span>
+    <div><h1 data-asset-ticker></h1><p class="muted" data-asset-name></p></div>
+    <a class="button button-lg coin-price-action" href="/launch" data-asset-launch></a>
+  </header>
+  <div class="coin-grid">
+    <div class="coin-main">
+      <section class="panel pad" aria-labelledby="labels-title">
+        <div class="section-head"><h2 id="labels-title">Risk labels</h2></div>
+        <ul class="labels" data-asset-labels></ul>
+      </section>
+      <section aria-labelledby="paired-title" data-live="paired" hidden>
+        <div class="section-head"><h2 id="paired-title">Coins paired with it</h2></div>
+        <div class="panel table-wrap"><table class="table" data-coins></table></div>
+      </section>
+    </div>
+    <aside><dl class="panel pad kv" data-asset-facts></dl></aside>
+  </div>
+</div>
+<div class="shell band" data-empty hidden>
+  <p class="statement">This asset isn't quoted.</p>
+  <p class="actions"><a class="button button-lg" href="/assets">All assets</a></p>
+</div>

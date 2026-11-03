@@ -1,33 +1,50 @@
-# Stoker landing, redesigned
+# Stoker, redesigned
 
-The landing for [stoker.markets](https://stoker.markets), cut to what it has to say: one slogan, the pair it means, three ideas, the coins people trade, one promise, one button.
-
-Four files, no build, no dependencies. Open `index.html` or serve the folder.
+An experimental redesign of every public page of [stoker.markets](https://stoker.markets). It lives in this playground only; nothing here touches the production site or its repository.
 
 ```sh
-python3 -m http.server        # then open http://localhost:8000/?api=fixture
-node check.mjs                # phone and desktop, light and dark; screenshots in ./shots
+node build.mjs                # writes the site to dist/, one folder per route
+node check.mjs                # builds, then opens every page on phone and desktop, light and dark
+node check.mjs --shots        # the same, saving a screenshot of each to shots/
+cd dist && python3 -m http.server   # then open http://localhost:8000/?api=fixture
 ```
 
-| File | Does |
+No dependencies. `check.mjs` needs Playwright, which it finds installed globally or locally.
+
+## How it is built
+
+| Path | Does |
 | --- | --- |
-| `index.html` | The whole page. Readable, indexable and usable without JavaScript. |
-| `style.css` | Tokens at the top, then one block per section, in page order. |
-| `live.js` | Fills the figures and the trending coins from the public API. A read that fails leaves its part hidden. |
-| `fixture.json` | What the API answers, for reviewing the layout offline (`?api=fixture`). |
+| `src/layout.html` | The header, footer and `<head>` every page shares. |
+| `src/pages/*.html` | One file per route. Front matter (`route`, `title`, `description`), then the page's content. |
+| `src/style.css` | Tokens, base, primitives (buttons, panels, tables, forms, figures), then each page's own pieces. |
+| `src/lib.js` | Where data comes from, how it is formatted, and the coins table several pages share. |
+| `src/app.js` | One renderer per page, picked by `<body data-page>`. |
+| `src/fixture.json` | Sample answers for every endpoint the pages read, in the API's shapes. Every coin and figure in it is made up. |
+| `build.mjs` | Wraps each page in the layout and writes `dist/<route>/index.html`. `BASE=/sub/path` prefixes links for hosting under a sub-path. |
 
-The API (`https://api.stoker.markets`) only answers browsers on Stoker's own origin, so elsewhere the live parts stay hidden. Use `?api=fixture`, or `?api=<origin>` for another deployment.
+Every page is complete HTML before any script runs. The scripts fill only the parts that come from the API, and a part with nothing real behind it stays hidden: never a zero, a placeholder or an error.
 
-## What changed from the live landing
+## Data
 
-- **Hero.** The lede, search field and live rows are gone. A pair, `STOKER / SOL`, rolls through SOL, USDC, NVDAx, SPYx and TSLAx, and says what the lede said.
-- **Figures.** Four, labelled in a word. The "Live from the chain since…" caption is gone. Figures with nothing behind them stay hidden, as before.
-- **Ideas.** Each is a statement and a picture. The body copy, captions and fact cards became a chip grid, a split and a checklist.
-- **Promise.** The eyebrow, the heading, the lede, the three cards and the closing caption became one sentence.
-- **Invitation and footer.** One heading and one button. The footer is a single row of links.
+The pages read Stoker's public API (`https://api.stoker.markets/v1`). That API only answers browsers on Stoker's own domain, so anywhere else the live parts stay hidden. To review them:
 
-Every link and route is the same as on the live site, and so are the fonts, colours and mark.
+- `?api=fixture` reads `src/fixture.json`. The choice is remembered for the visit, so links keep it.
+- `?api=<origin>` reads another deployment of the API.
+- `?api=live` goes back to the real one.
 
-## Moving it into `apps/web`
+## Pages
 
-Each `<section>` maps to a component the live page already has (`Hero`, `Stats`, `Ideas`, `Trending`, `Promise`, `Invite`), and `live.js` reads the same endpoints as `src/lib/api.ts`. The port is markup and CSS modules. No contract or API changes.
+Home, Explore (`/coins`), a coin (`/coin/?mint=`), Stoke a coin (`/launch`), Swap, Assets, an asset (`/asset/?mint=`), Holder rewards, Curated, Stats (`/revenue`), Burn and Flywheel (`/burns`), Fee changes (`/announcements`), Developers (`/api`), Fees, Terms, Privacy, Risk disclosure and 404.
+
+A coin and an asset take their mint as `?mint=` because a static site can't serve `/coin/<mint>`. Production's own routes stay as they are.
+
+Not redesigned: the creator dashboard, the operator console, a wallet's rewards and a single reward round. They are reached from a connected wallet or an admin key.
+
+The wallet buttons and the Swap card are designed but not wired: connecting a wallet, signing, and Jupiter's swap belong to the production app.
+
+## Design
+
+- **Purpose first.** Each page leads with its one title and then the thing itself. Ledes, eyebrows, captions and helper text are cut; where a page needed them, the layout changed instead (Holder rewards and Curated became three numbered steps, the Fees table became one entry per fee).
+- **Trust.** One serif for statements, one sans for anything read or acted on, tabular figures throughout. Ivory and ink, hairlines instead of boxes, one accent, the brand's heat, kept for the mark and what a Creator earns. Every figure links to the record it comes from, and every page ends with the risk sentence.
+- **The same words.** The legal pages, fee rules and risk labels keep production's wording; only the framing around them changed.

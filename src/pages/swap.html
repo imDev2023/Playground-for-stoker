@@ -1,0 +1,13 @@
+---
+route: /swap
+title: Swap
+description: Any Solana token for any other, through Jupiter.
+---
+<div class="shell page-head" style="justify-content:center;text-align:center"><h1>Swap</h1></div>
+<form class="shell swap" onsubmit="return false" aria-label="Swap">
+  <label class="amount panel"><input inputmode="decimal" placeholder="0" aria-label="You pay"><span class="token"><span class="tile">S</span>SOL</span></label>
+  <button class="swap-flip" type="button" aria-label="Swap direction">↓</button>
+  <label class="amount panel"><input inputmode="decimal" placeholder="0" aria-label="You get" readonly><span class="token"><span class="tile">U</span>USDC</span></label>
+  <button class="button button-lg button-block" type="button" style="margin-top:8px">Connect wallet</button>
+  <p class="muted" style="text-align:center;font-size:13px;margin-top:8px">Routed by Jupiter. <a class="link" href="/fees#swap">0.5% per swap</a>.</p>
+</form>

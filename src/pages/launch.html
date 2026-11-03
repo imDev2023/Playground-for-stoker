@@ -1,0 +1,78 @@
+---
+route: /launch
+title: Stoke a coin
+description: Launch a coin on Solana priced in SOL, a stablecoin, a tokenized stock or any asset Raydium quotes.
+---
+<div class="shell page-head"><h1>Stoke a coin</h1></div>
+<div class="shell launch">
+  <form data-launch onsubmit="return false">
+    <fieldset>
+      <legend>Your coin</legend>
+      <label class="drop"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden data-image>Add image</label>
+      <div class="two">
+        <label class="field"><span>Name</span><input name="name" maxlength="32" placeholder="Tracer Bullet" autocomplete="off" data-name></label>
+        <label class="field"><span>Ticker</span><input name="ticker" maxlength="10" placeholder="TRCR" autocomplete="off" pattern="[A-Za-z0-9$]+" data-ticker></label>
+      </div>
+      <label class="field"><span>Description</span><textarea name="description" maxlength="1000"></textarea></label>
+    </fieldset>
+
+    <fieldset>
+      <legend>Paired with</legend>
+      <div class="options" data-pairs>
+        <label class="option"><input type="radio" name="quote" value="SOL" checked><span><b>SOL</b></span><span class="badge">Solana</span></label>
+        <label class="option"><input type="radio" name="quote" value="USDC"><span><b>USDC</b></span><span class="badge">Currencies</span></label>
+        <label class="option"><input type="radio" name="quote" value="NVDAx"><span><b>NVDAx</b></span><span class="badge">xStocks</span></label>
+      </div>
+      <label class="field" data-more-pairs hidden><span>Any other asset</span><select data-other></select></label>
+    </fieldset>
+
+    <fieldset>
+      <legend>Launch type</legend>
+      <div class="options">
+        <label class="option"><input type="radio" name="type" value="standard" checked><span><b>Standard</b></span></label>
+        <label class="option"><input type="radio" name="type" value="coin"><span><b>Reward Launch</b>, paid in the coin</span></label>
+        <label class="option"><input type="radio" name="type" value="quote"><span><b>Reward Launch</b>, paid in <span data-quote-name>SOL</span></span></label>
+      </div>
+      <div class="field" data-tax hidden>
+        <span>Reward Tax</span>
+        <div class="seg" role="radiogroup" aria-label="Reward Tax">
+          <label><input type="radio" name="tax" value="1" checked>1%</label><label><input type="radio" name="tax" value="3">3%</label><label><input type="radio" name="tax" value="5">5%</label>
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Links</legend>
+      <div class="two">
+        <label class="field"><span>Telegram</span><input type="url" placeholder="https://t.me/"></label>
+        <label class="field"><span>X</span><input type="url" placeholder="https://x.com/"></label>
+      </div>
+      <label class="field"><span>Website</span><input type="url" placeholder="https://"></label>
+    </fieldset>
+
+    <fieldset>
+      <legend>First buy</legend>
+      <label class="amount"><input inputmode="decimal" placeholder="0" aria-label="First buy" data-first><span class="token" data-first-token>SOL</span></label>
+    </fieldset>
+  </form>
+
+  <aside>
+    <div class="panel pad preview">
+      <div class="preview-coin"><span class="tile tile-lg" data-preview-tile>S</span><span><b data-preview-pair>TICKER/SOL</b><span class="muted" data-preview-name>Your coin</span></span></div>
+      <dl class="kv">
+        <div><dt>Supply</dt><dd>1,000,000,000, fixed</dd></div>
+        <div><dt>Graduates at</dt><dd data-preview-target>85 SOL raised</dd></div>
+        <div><dt>Launch type</dt><dd data-preview-type>Standard</dd></div>
+        <div><dt>You earn</dt><dd><a class="link" href="/fees">Half of what we collect</a></dd></div>
+        <div><dt>Platform fee to launch</dt><dd>None</dd></div>
+      </dl>
+      <ul class="checks">
+        <li>Liquidity locked at graduation</li>
+        <li>Metadata stored on Arweave</li>
+        <li>Every payment on the ledger</li>
+      </ul>
+      <button class="button button-lg button-block" type="button">Connect wallet</button>
+      <p class="muted" style="font-size:13px">A coin can lose all of its value. Nothing here is investment advice.</p>
+    </div>
+  </aside>
+</div>

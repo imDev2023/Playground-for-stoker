@@ -1,0 +1,30 @@
+---
+route: /revenue
+title: Stats
+description: The platform's revenue, the Creators' half, and every buy and burn, each a sum of the public ledger.
+---
+<div class="shell page-head"><h1>Stats</h1><a class="arrow" href="/burns">Burn and Flywheel</a></div>
+<div class="shell" data-live="figures" hidden>
+  <dl class="figures">
+    <div data-figure="revenue" hidden><dt>Revenue, all time</dt><dd></dd></div>
+    <div data-figure="creators" hidden><dt>Sent to Creators</dt><dd></dd></div>
+    <div data-figure="burned" hidden><dt>STOKER burned</dt><dd></dd></div>
+    <div data-figure="share" hidden><dt>Of revenue to the Burn</dt><dd></dd></div>
+  </dl>
+</div>
+<section class="shell section" aria-labelledby="days-title" data-live="days" hidden>
+  <div class="section-head"><h2 id="days-title">Daily revenue</h2><span class="muted" data-days-unit>SOL</span></div>
+  <div class="panel pad"><svg class="bars" viewBox="0 0 300 100" preserveAspectRatio="none" data-bars aria-hidden="true"></svg></div>
+</section>
+<section class="shell section" aria-labelledby="assets-title" data-live="totals" hidden>
+  <div class="section-head"><h2 id="assets-title">By asset</h2></div>
+  <div class="cards" data-totals></div>
+</section>
+<section class="shell section" aria-labelledby="ledger-title" data-live="ledger" hidden>
+  <div class="section-head"><h2 id="ledger-title">Ledger</h2></div>
+  <div class="panel table-wrap"><table class="table" data-ledger></table></div>
+</section>
+<section class="shell section" aria-labelledby="where-title" data-live="wallets" hidden>
+  <div class="section-head"><h2 id="where-title">Where it goes</h2></div>
+  <dl class="panel pad kv" data-wallets></dl>
+</section>

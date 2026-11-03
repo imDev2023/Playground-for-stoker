@@ -1,0 +1,24 @@
+# Stoker
+
+> Launch a coin on Solana priced in the asset you pick: SOL, a stablecoin, a tokenized stock or any asset Raydium quotes. Coins trade on Raydium LaunchLab, then in a Raydium pool with locked liquidity. Creators receive half of what the platform collects on their coin's trades. Stoker never holds funds or keys; every transaction is signed in the user's wallet.
+
+Coins launched here are speculative and can lose all their value. Not offered in the United States, the United Kingdom, Canada or sanctioned countries.
+
+## Pages
+- [Explore coins](https://stoker.markets/coins)
+- [Stoke a coin](https://stoker.markets/launch)
+- [Assets to pair with](https://stoker.markets/assets)
+- [Holder rewards](https://stoker.markets/rewards)
+- [Stats and the public ledger](https://stoker.markets/revenue)
+- [Fees](https://stoker.markets/fees)
+- [Risk disclosure](https://stoker.markets/risk)
+- [API reference](https://stoker.markets/api)
+
+## API (no key needed to read)
+- GET https://api.stoker.markets/v1/platform: addresses, Graduation Target, every fee and rate
+- GET https://api.stoker.markets/v1/quotes: every asset a coin can be paired with, with risk labels
+- GET https://api.stoker.markets/v1/launches?sort=market_cap|new|trending|graduation: the coins
+- GET https://api.stoker.markets/v1/launches/{mint}: one coin
+- GET https://api.stoker.markets/v1/stats: coins launched, graduated, 24h volume
+- GET https://api.stoker.markets/v1/revenue and /v1/ledger: the platform's books
+- POST https://api.stoker.markets/v1/trades/prepare: an unsigned buy or sell for your wallet to sign
