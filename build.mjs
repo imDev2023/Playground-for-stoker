@@ -13,8 +13,20 @@ import { join } from "node:path";
 
 const root = new URL(".", import.meta.url).pathname;
 const src = join(root, "src");
-const out = join(root, "dist");
 const base = (process.env.BASE ?? "").replace(/\/$/, "");
+// `PREVIEW=1` writes preview/ instead: relative links ending in index.html and the fixture as the data, so the site
+// can be clicked through from any host, files included. The home page there leaves out its document skeleton, for
+// hosts that add their own.
+const preview = process.env.PREVIEW === "1";
+const out = join(root, preview ? "preview" : "dist");
+
+/** A root-relative site path, made relative to a page `rel` deep: "/coins?x" from a route becomes "../coins/index.html?x". */
+function relative(rel, path) {
+  const [, file, rest = ""] = path.match(/^([^?#]*)(.*)$/);
+  if (/\.\w+$/.test(file)) return `${rel}/${file}${rest}`;
+  const dir = file.replace(/\/$/, "");
+  return `${rel}/${dir ? `${dir}/` : ""}index.html${rest}`;
+}
 
 export async function build() {
   await rm(out, { recursive: true, force: true });
@@ -37,6 +49,19 @@ export async function build() {
     // The header marks the section the page belongs to.
     html = html.replace(new RegExp(`(<nav class="nav"[\\s\\S]*?)href="${section}"`), `$1href="${section}" aria-current="page"`);
     if (base) html = html.replace(/(href|src|action)="\/(?!\/)/g, `$1="${base}/`).replace(/data-base=""/, `data-base="${base}"`);
+    if (preview) {
+      if (route === "/404") continue;
+      const rel = route === "/" ? "." : "..";
+      html = html
+        .replace(/(href|src)="\/(?!\/)([^"]*)"/g, (_, attr, path) => `${attr}="${relative(rel, path)}"`)
+        .replace('data-api="https://api.stoker.markets" data-base=""', `data-api="fixture" data-base="${rel}" data-relative="1"`);
+      if (route === "/") {
+        html = html
+          .replace(/<!doctype html>\s*<html[^>]*>\s*<head>/, "").replace(/<title>[^<]*<\/title>/, "<title>Stoker Redesign</title>")
+          .replace(/<\/head>\s*<body[^>]*>/, `<script>Object.assign(document.documentElement.dataset, { api: "fixture", base: ".", relative: "1" }); document.body.dataset.page = "index";</script>`)
+          .replace(/<\/body>\s*<\/html>\s*$/, "");
+      }
+    }
     const dir = route === "/404" ? out : join(out, route);
     await mkdir(dir, { recursive: true });
     await writeFile(join(dir, route === "/404" ? "404.html" : "index.html"), html);
@@ -47,5 +72,5 @@ export async function build() {
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const routes = await build();
-  console.log(`built ${routes.length} pages into dist/`);
+  console.log(`built ${routes.length} pages into ${preview ? "preview" : "dist"}/`);
 }

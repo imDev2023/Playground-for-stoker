@@ -51,7 +51,12 @@ export const $ = (sel, root = document) => root.querySelector(sel);
 export const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
 export const show = (el) => { if (el) el.hidden = false; };
 export const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
-export const link = (path) => `${base}${path}`;
+/** A site path as an href: as it is, or, in a preview build (data-relative), relative and ending in index.html. */
+export const link = (path) => {
+  if (!html.dataset.relative) return `${base}${path}`;
+  const [, dir, rest] = path.match(/^\/([^?#]*?)\/?([?#].*)?$/);
+  return `${base}/${dir ? `${dir}/` : ""}index.html${rest ?? ""}`;
+};
 
 /** A coin's picture, or its first letter on the heat when it has none. */
 export const tile = (image, symbol, cls = "tile") =>

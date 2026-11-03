@@ -31,8 +31,10 @@
   --ease: cubic-bezier(.2, .7, .2, 1);
   --rule: linear-gradient(var(--line), var(--line)) top center / calc(100% - 2 * var(--gutter)) 1px no-repeat;
 }
+/* Dark follows the system unless a host sets data-theme; an explicit choice wins either way. */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
     --paper: #0c0c0d;
     --surface: #141415;
     --sunken: #09090a;
@@ -48,6 +50,23 @@
     --down: #e2725f;
     --shadow: 0 1px 0 rgb(255 255 255 / 3%) inset, 0 16px 40px -20px rgb(0 0 0 / 70%);
   }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --paper: #0c0c0d;
+  --surface: #141415;
+  --sunken: #09090a;
+  --line: rgb(242 239 232 / 9%);
+  --line-strong: rgb(242 239 232 / 18%);
+  --ink: #f2efe8;
+  --ink-2: #a8a399;
+  --ink-3: #78746b;
+  --button: #f2efe8;
+  --on-button: #0c0c0d;
+  --gold: #d6a95c;
+  --up: #5cc28b;
+  --down: #e2725f;
+  --shadow: 0 1px 0 rgb(255 255 255 / 3%) inset, 0 16px 40px -20px rgb(0 0 0 / 70%);
 }
 
 /* Base -------------------------------------------------------------------- */
@@ -179,7 +198,7 @@ a.panel:hover { transform: translateY(-2px); border-color: var(--line-strong); }
 
 /* Header ------------------------------------------------------------------ */
 .bar {
-  position: sticky; top: 0; z-index: 20;
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20;
   background: color-mix(in srgb, var(--paper) 82%, transparent);
   backdrop-filter: saturate(1.4) blur(18px); -webkit-backdrop-filter: saturate(1.4) blur(18px);
   border-bottom: 1px solid var(--line);
