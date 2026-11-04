@@ -468,3 +468,27 @@ a.chip:hover { border-color: var(--line-strong); }
 @media (max-width: 640px) { .tile-xl { width: 64px; height: 64px; font-size: 34px; } }
 .toolbar > .chip-pick { margin-left: auto; }
 @media (max-width: 640px) { .toolbar > .chip-pick { margin-left: 0; } }
+
+/* Stocks: the US market's hours beside Solana's, the gap to the stock, and the asset page's two actions. */
+.hours { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 22px; font-size: 14px; }
+.hours > span { display: inline-flex; align-items: center; gap: 8px; }
+.hours b { font-weight: 600; }
+.hours-row { margin: -12px 0 28px; }
+.dot { flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--ink-3); }
+.dot-open { background: var(--up); box-shadow: 0 0 0 3px color-mix(in srgb, var(--up) 18%, transparent); }
+.coin-price .under { display: block; margin-top: 6px; font-size: 13px; color: var(--ink-2); }
+.gap-wide, .coin-price .under.gap-wide { color: var(--gold); }
+.chart-head { justify-content: flex-end; }
+.asset-actions { display: flex; align-items: center; justify-content: flex-end; gap: 12px 24px; flex-wrap: wrap; }
+@media (max-width: 640px) { .asset-actions { justify-content: flex-start; } }
+
+/* Phones: a search keeps a usable width, a table's first column wraps instead of pushing the figures off-screen,
+   and a coin or stock page reads header, chart, action, then the rest. */
+.toolbar .search { flex: 1 1 260px; }
+@media (max-width: 640px) {
+  .table td:first-child, .table th:first-child { white-space: normal; }
+}
+@media (max-width: 960px) {
+  .coin-main { display: contents; }
+  .coin-main > :first-child { order: -2; }
+}

@@ -43,8 +43,14 @@ export const price = (n) => {
   const run = /^0\.(0{4,})(\d+)$/.exec(full);
   return run ? `0.0${String(run[1].length).replace(/\d/g, (d) => SUBSCRIPT[d])}${run[2]}` : full;
 };
+/** A dollar amount: cents from a dollar up, as a broker shows a share's price; production's significant digits below. */
+export const money = (n) => (n >= 1 ? n.toLocaleString("en-US", { style: "currency", currency: "USD" }) : `$${price(n)}`);
 export const pct = (bps) => `${(bps / 100).toLocaleString("en-US", { maximumFractionDigits: 3 })}%`;
-export const change = (c) => c == null ? ["", ""] : [`${(c * 100).toLocaleString("en-US", { maximumFractionDigits: 1, signDisplay: "exceptZero" })}%`, c > 0 ? "up" : c < 0 ? "down" : ""];
+/** A change as a signed percentage and its direction; up to one decimal, or exactly `digits` (a stock's two). */
+export const change = (c, digits) => c == null ? ["", ""] : [
+  `${(c * 100).toLocaleString("en-US", digits == null ? { maximumFractionDigits: 1, signDisplay: "exceptZero" } : { minimumFractionDigits: digits, maximumFractionDigits: digits, signDisplay: "exceptZero" })}%`,
+  c > 0 ? "up" : c < 0 ? "down" : "",
+];
 export const ago = (iso) => {
   const s = (Date.now() - Date.parse(iso)) / 1000;
   return s < 60 ? "now" : s < 3600 ? `${Math.floor(s / 60)}m` : s < 86400 ? `${Math.floor(s / 3600)}h` : `${Math.floor(s / 86400)}d`;
@@ -132,18 +138,82 @@ export function toggleWatch(mint) {
   return set.has(mint);
 }
 
-/** A coin's last day as a line, from its hourly candles; read once per coin and kept for the visit. */
+/**
+ * The last day as a line, from hourly candles: a coin's by default (`data-spark` holds its mint), or any series named by
+ * `data-spark-path`. Each series is read once and kept for the visit.
+ */
 const sparkCache = new Map();
 export async function sparklines(root, max = 20) {
   for (const svg of $$("[data-spark]", root).slice(0, max)) {
-    const mint = svg.dataset.spark;
-    if (!sparkCache.has(mint)) sparkCache.set(mint, read(`/v1/launches/${mint}/candles?interval=1h`).then((d) => d?.candles.slice(-24).map((k) => k.close) ?? []));
-    const closes = await sparkCache.get(mint);
+    const path = svg.dataset.sparkPath ?? `/v1/launches/${svg.dataset.spark}/candles?interval=1h`;
+    if (!sparkCache.has(path)) sparkCache.set(path, read(path).then((d) => d?.candles.slice(-24).map((k) => k.close) ?? []));
+    const closes = await sparkCache.get(path);
     if (closes.length < 2) continue;
     const lo = Math.min(...closes), hi = Math.max(...closes), span = hi - lo || 1;
     svg.innerHTML = `<polyline points="${closes.map((v, i) => `${(i / (closes.length - 1)) * 100},${26 - ((v - lo) / span) * 24}`).join(" ")}"/>`;
     svg.classList.add(closes.at(-1) >= closes[0] ? "up" : "down");
   }
+}
+
+/** A price line with a soft fill under it, scaled to the drawing; false, and an empty drawing, below two points. */
+export function lineChart(svg, closes) {
+  if (closes.length < 2) {
+    svg.innerHTML = "";
+    return false;
+  }
+  const lo = Math.min(...closes), hi = Math.max(...closes), span = hi - lo || 1;
+  const pts = closes.map((v, i) => `${(i / (closes.length - 1)) * 100},${92 - ((v - lo) / span) * 84}`).join(" ");
+  svg.innerHTML = `<defs><linearGradient id="chartFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="currentColor" stop-opacity=".12"/><stop offset="1" stop-color="currentColor" stop-opacity="0"/></linearGradient></defs>
+    <polygon class="chart-fill" points="0,100 ${pts} 100,100"/><polyline class="chart-line" points="${pts}"/>`;
+  return true;
+}
+
+// The US stock market ------------------------------------------------------
+// The regular session of the NYSE and Nasdaq: 09:30 to 16:00 New York time on weekdays, shut on these holidays and
+// closing at 13:00 on the early days, from the exchanges' published calendars. Extend both lists each year.
+const US_HOLIDAYS = new Set([
+  "2026-01-01", "2026-01-19", "2026-02-16", "2026-04-03", "2026-05-25", "2026-06-19", "2026-07-03", "2026-09-07", "2026-11-26", "2026-12-25",
+  "2027-01-01", "2027-01-18", "2027-02-15", "2027-03-26", "2027-05-31", "2027-06-18", "2027-07-05", "2027-09-06", "2027-11-25", "2027-12-24",
+]);
+const US_EARLY_CLOSES = new Set(["2026-11-27", "2026-12-24", "2027-11-26"]);
+const OPENS = 9 * 60 + 30;
+const newYork = new Intl.DateTimeFormat("en-US", {
+  timeZone: "America/New_York", year: "numeric", month: "2-digit", day: "2-digit", weekday: "short", hour: "2-digit", minute: "2-digit", hourCycle: "h23",
+});
+const inNewYork = (date) => {
+  const p = Object.fromEntries(newYork.formatToParts(date).map((x) => [x.type, x.value]));
+  return { date: `${p.year}-${p.month}-${p.day}`, weekday: p.weekday, minutes: Number(p.hour) * 60 + Number(p.minute) };
+};
+const isTradingDay = ({ date, weekday }) => weekday !== "Sat" && weekday !== "Sun" && !US_HOLIDAYS.has(date);
+
+/** Whether the US market is open now, and when it next closes or opens, in New York time. */
+export function usMarket(now = new Date()) {
+  const today = inNewYork(now);
+  const closes = US_EARLY_CLOSES.has(today.date) ? 13 * 60 : 16 * 60;
+  if (isTradingDay(today) && today.minutes >= OPENS && today.minutes < closes) {
+    return { open: true, next: `closes ${closes === 13 * 60 ? "13:00" : "16:00"} ET` };
+  }
+  // Calendar days from New York's today, each taken at midday UTC so a change of clocks never skips one.
+  const [y, m, d] = today.date.split("-").map(Number);
+  for (let i = 0; i < 14; i++) {
+    const day = inNewYork(new Date(Date.UTC(y, m - 1, d + i, 17)));
+    if (!isTradingDay(day) || (i === 0 && today.minutes >= OPENS)) continue;
+    return { open: false, next: `opens ${i === 0 ? "" : `${day.weekday} `}09:30 ET` };
+  }
+  return { open: false, next: "" };
+}
+
+/** Fills a [data-hours] line with the US market's state beside Solana's, which never closes, and keeps it current. */
+export function marketHours(el) {
+  if (!el) return;
+  const draw = () => {
+    const us = usMarket();
+    el.innerHTML = `<span><span class="dot ${us.open ? "dot-open" : ""}"></span><span>US market <b>${us.open ? "open" : "closed"}</b>${us.next ? `<span class="muted"> · ${us.next}</span>` : ""}</span></span>
+      <span><span class="dot dot-open"></span><span>Solana <b>open</b></span></span>`;
+  };
+  draw();
+  setInterval(draw, 60_000);
+  show(el);
 }
 
 // "/" goes to search from anywhere: the page's own field, or Explore's.

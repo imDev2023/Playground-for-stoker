@@ -1,5 +1,8 @@
 // One renderer per page, picked by <body data-page>. Each fills what the API answers and leaves the rest hidden.
-import { read, $, $$, show, esc, link, whole, short, price, pct, change, ago, shortAddress, ticker, day, tile, pairTile, pairName, coinTable, figure, watched } from "./lib.js";
+import {
+  read, $, $$, show, esc, link, whole, short, price, money, pct, change, ago, shortAddress, ticker, day, tile, pairTile, pairName, coinTable, figure, watched,
+  sparklines, lineChart, usMarket, marketHours,
+} from "./lib.js";
 
 const params = new URLSearchParams(location.search);
 const sol = (lamports) => Number(lamports) / 1e9;
@@ -7,16 +10,38 @@ const units = (raw, decimals) => Number(raw) / 10 ** decimals;
 const solscan = (kind, id) => `https://solscan.io/${kind}/${id}`;
 const checked = (name) => $(`input[name="${name}"]:checked`)?.value;
 
-/** The category chips that filter a list, from the categories present, with All first. */
-const KINDS = { sol: "Solana", stablecoin: "Currencies", tokenized_stock: "Stocks", wrapped: "Wrapped", defi: "DeFi", rwa: "Real-world assets", leveraged: "Leverage", collectible: "Collectibles", meme: "Memes", community: "Community" };
-function kindChips(el, categories, onChange) {
-  const present = Object.keys(KINDS).filter((k) => categories.includes(k));
-  if (present.length < 2) return;
-  el.innerHTML = ["all", ...present].map((k, i) =>
-    `<label class="chip chip-pick"><input type="radio" name="kind" value="${k}"${i ? "" : " checked"}>${k === "all" ? "All" : KINDS[k]}</label>`).join("");
+/** A row of chips that filters a list: All first, then each value present; left out when there is only one value. */
+function filterChips(el, name, entries, onChange) {
+  if (entries.length < 2) return;
+  el.innerHTML = [["all", "All"], ...entries].map(([value, label], i) =>
+    `<label class="chip chip-pick"><input type="radio" name="${name}" value="${value}"${i ? "" : " checked"}>${esc(label)}</label>`).join("");
   el.addEventListener("change", onChange);
   show(el);
 }
+
+const KINDS = { sol: "Solana", stablecoin: "Currencies", tokenized_stock: "Stocks", wrapped: "Wrapped", defi: "DeFi", rwa: "Real-world assets", leveraged: "Leverage", collectible: "Collectibles", meme: "Memes", community: "Community" };
+const kindChips = (el, categories, onChange) =>
+  filterChips(el, "kind", Object.keys(KINDS).filter((k) => categories.includes(k)).map((k) => [k, KINDS[k]]), onChange);
+
+/** The stock issuers by the ids the API gives them, in production's order. */
+const ISSUERS = { xstocks: "xStocks", prestocks: "PreStocks", tessera: "Tessera", backpack: "Backpack" };
+
+/** An asset's risk labels as a list, each with its detail and where it was read; a plain line when there is nothing to flag. */
+const labelList = (a) =>
+  a.labels === null
+    ? `<li><p>${esc(a.symbol)} has not been checked yet.</p></li>`
+    : a.labels.length
+      ? a.labels.map((x) => `<li><span class="badge ${x.severity === "caution" ? "badge-warn" : ""}">${esc(x.title)}</span><p>${esc(x.detail)}</p><p class="note">${esc(x.source)}</p></li>`).join("")
+      : `<li><p>Nothing to flag: no issuer authority over wallets, no transfer fee, and on the verified list.</p></li>`;
+
+/** A stock token's price against the stock it tracks, from the stock's last price; wide from 1% either way. */
+const gap = (s) => {
+  const last = s.market?.last?.price;
+  const usd = Number(s.price?.usd);
+  if (!last || !usd) return { text: "", wide: false };
+  const value = usd / last - 1;
+  return { text: `${(value * 100).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2, signDisplay: "exceptZero" })}%`, wide: Math.abs(value) >= 0.01 };
+};
 
 const pages = {};
 
@@ -112,7 +137,7 @@ pages.coin = async () => {
     labels.textContent = asset.labels === null ? "Not checked yet" : cautions ? `${cautions} risk label${cautions === 1 ? "" : "s"}` : "No risk labels";
     if (cautions) labels.classList.add("badge-warn");
     $("[data-quote-facts]").innerHTML = [
-      [`1 ${esc(asset.symbol)}`, asset.price?.usd ? `$${price(Number(asset.price.usd))}` : ""],
+      [`1 ${esc(asset.symbol)}`, asset.price?.usd ? money(Number(asset.price.usd)) : ""],
       ["Liquidity", asset.liquidityUsd ? `$${short(asset.liquidityUsd)}` : ""],
       ["Graduates at", asset.graduationTarget ? `${short(units(asset.graduationTarget.raw, asset.decimals))} ${esc(asset.symbol)}` : ""],
     ].filter(([, v]) => v).map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join("");
@@ -138,13 +163,7 @@ pages.coin = async () => {
   // Chart.
   const chart = async (interval) => {
     const data = await read(`/v1/launches/${l.mint}/candles?interval=${interval}`);
-    const closes = data?.candles.map((k) => k.close) ?? [];
-    const svg = $("[data-chart]");
-    if (closes.length < 2) { svg.innerHTML = ""; return; }
-    const lo = Math.min(...closes), hi = Math.max(...closes), span = hi - lo || 1;
-    const pts = closes.map((v, i) => `${(i / (closes.length - 1)) * 100},${92 - ((v - lo) / span) * 84}`);
-    svg.innerHTML = `<defs><linearGradient id="chartFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="currentColor" stop-opacity=".12"/><stop offset="1" stop-color="currentColor" stop-opacity="0"/></linearGradient></defs>
-      <polygon class="chart-fill" points="0,100 ${pts.join(" ")} 100,100"/><polyline class="chart-line" points="${pts.join(" ")}"/>`;
+    lineChart($("[data-chart]"), data?.candles.map((k) => k.close) ?? []);
   };
   $("[data-interval]").addEventListener("change", () => chart(checked("iv")));
   chart("15m");
@@ -277,7 +296,7 @@ pages.assets = async () => {
     table.innerHTML = `<thead><tr><th>Asset</th><th class="r">Price</th><th class="r">Liquidity</th><th class="r">Graduates at</th></tr></thead>` + groups.map(([k, r]) =>
       `<tbody><tr class="group"><th colspan="4">${KINDS[k]}</th></tr>${r.map((a) => `<tr>
         <td><a class="cell-coin" href="${link(`/asset/?mint=${a.mint}`)}">${tile(a.logo, a.symbol)}<span><b>${esc(a.symbol)}</b>${a.launchable ? "" : ' <span class="badge">Not launchable</span>'}<br><span>${esc(a.name)}</span></span></a></td>
-        <td class="r">${a.price?.usd ? `$${price(Number(a.price.usd))}` : ""}</td>
+        <td class="r">${a.price?.usd ? money(Number(a.price.usd)) : ""}</td>
         <td class="r">${a.liquidityUsd ? `$${short(a.liquidityUsd)}` : ""}</td>
         <td class="r">${a.graduationTarget ? `${short(units(a.graduationTarget.raw, a.decimals))} ${esc(a.symbol)}` : ""}</td></tr>`).join("")}</tbody>`).join("");
     $('[data-live="assets"]').hidden = rows.length === 0;
@@ -298,12 +317,15 @@ pages.asset = async () => {
   $("[data-asset-name]").textContent = `${a.name} · ${KINDS[a.category]}`;
   const launch = $("[data-asset-launch]");
   if (a.launchable) { launch.textContent = `Stoke a coin paired with ${a.symbol}`; launch.href = link(`/launch?quote=${a.mint}`); } else launch.remove();
-  const labels = a.labels ?? [];
-  $("[data-asset-labels]").innerHTML = labels.length
-    ? labels.map((x) => `<li><span class="badge ${x.severity === "caution" ? "badge-warn" : ""}">${esc(x.title)}</span><p>${esc(x.detail)}</p><p class="note">${esc(x.source)}</p></li>`).join("")
-    : `<li><p>Nothing to flag: no issuer authority over wallets, no transfer fee, and on the verified list.</p></li>`;
+  if (a.category === "tokenized_stock") {
+    const trade = $("[data-asset-trade]");
+    trade.textContent = `Trade ${a.symbol}`;
+    trade.href = link(`/stock/?mint=${a.mint}`);
+    show(trade);
+  }
+  $("[data-asset-labels]").innerHTML = labelList(a);
   const facts = [
-    ["Price", a.price?.usd ? `$${price(Number(a.price.usd))}` : ""],
+    ["Price", a.price?.usd ? money(Number(a.price.usd)) : ""],
     ["In SOL", a.price ? price(Number(a.price.sol)) : ""],
     ["Liquidity", a.liquidityUsd ? `$${short(a.liquidityUsd)}` : ""],
     ["A coin graduates at", a.graduationTarget ? `${short(units(a.graduationTarget.raw, a.decimals))} ${esc(a.symbol)}` : ""],
@@ -315,6 +337,151 @@ pages.asset = async () => {
   const coins = (await read(`/v1/launches?quote=${a.mint}&limit=8`))?.launches.filter((l) => l.quote.mint === a.mint) ?? [];
   if (coins.length) { coinTable($("[data-coins]"), coins, { compact: true }); show($('[data-live="paired"]')); }
   show($('[data-live="asset"]'));
+};
+
+/**
+ * Stocks: every tokenized stock in the Quote Registry, open on Solana while the US market sleeps. The 24h change, the
+ * stock's own last price and the trend line read what production's API doesn't serve yet (`change24h` and
+ * `market.last` on a Quote Asset, `GET /v1/quotes/:mint/candles`); until it does, those columns stay empty and the
+ * 24h sort stays hidden.
+ */
+pages.stocks = async () => {
+  marketHours($("[data-hours]"));
+  const all = (await read("/v1/quotes"))?.quotes.filter((q) => q.category === "tokenized_stock") ?? [];
+  if (!all.length) return;
+  const table = $("[data-stocks]");
+  if (all.some((s) => s.change24h != null)) show($("[data-sort-change]"));
+  const sorters = {
+    liquidity: (a, b) => (b.liquidityUsd ?? -1) - (a.liquidityUsd ?? -1),
+    change: (a, b) => (b.change24h ?? -Infinity) - (a.change24h ?? -Infinity),
+    name: (a, b) => (a.symbol ?? "").localeCompare(b.symbol ?? ""),
+  };
+  const render = () => {
+    const q = $("[data-search]").value.trim().toLowerCase();
+    const issuer = checked("issuer") ?? "all";
+    const rows = all
+      .filter((s) => issuer === "all" || s.issuer === issuer)
+      .filter((s) => !q || [s.symbol, s.name, s.market?.ticker, s.mint].some((v) => v?.toLowerCase().includes(q)))
+      .sort(sorters[checked("sort")]);
+    table.innerHTML = `
+      <thead><tr><th scope="col">Stock</th><th scope="col" class="r">Price</th><th scope="col" class="r">24h</th><th scope="col" class="hide-sm"><span class="visually-hidden">Trend</span></th><th scope="col" class="r hide-sm">vs stock</th><th scope="col" class="r hide-sm">Liquidity</th><th scope="col" class="hide-sm">Issuer</th></tr></thead>
+      <tbody>${rows.map((s) => {
+        const [c, dir] = change(s.change24h, 2);
+        const g = gap(s);
+        return `<tr>
+          <td><a class="cell-coin" href="${link(`/stock/?mint=${s.mint}`)}">${tile(s.logo, s.symbol, "tile asset-tile")}<span><b>${esc(s.symbol)}</b><br><span>${esc(s.name)}</span></span></a></td>
+          <td class="r">${s.price?.usd ? money(Number(s.price.usd)) : ""}</td>
+          <td class="r ${dir}">${c}</td>
+          <td class="hide-sm"><svg class="spark" viewBox="0 0 100 28" preserveAspectRatio="none" data-spark="${s.mint}" data-spark-path="/v1/quotes/${s.mint}/candles?interval=1h" aria-hidden="true"></svg></td>
+          <td class="r hide-sm ${g.wide ? "gap-wide" : "muted"}">${g.text}</td>
+          <td class="r hide-sm">${s.liquidityUsd ? `$${short(s.liquidityUsd)}` : ""}</td>
+          <td class="hide-sm">${s.issuer ? `<span class="badge">${ISSUERS[s.issuer]}</span>` : ""}</td>
+        </tr>`;
+      }).join("")}</tbody>`;
+    sparklines(table);
+    $('[data-live="stocks"]').hidden = rows.length === 0;
+    $("[data-empty]").hidden = rows.length > 0;
+  };
+  filterChips($("[data-issuers]"), "issuer", Object.keys(ISSUERS).filter((i) => all.some((s) => s.issuer === i)).map((i) => [i, ISSUERS[i]]), render);
+  $("[data-search]").addEventListener("input", render);
+  $("[data-sort]").addEventListener("change", render);
+  render();
+};
+
+/** The Swap page's fee, which a stock trade through Jupiter pays: production's JUPITER_REFERRAL_FEE_BPS default. */
+const SWAP_FEE_BPS = 50;
+/** An amount of a stock or a currency: four decimals under one, for fractions of a share; two from there. */
+const amount = (n) => n.toLocaleString("en-US", { maximumFractionDigits: n < 1 ? 4 : 2 });
+
+/**
+ * One stock: its price beside the stock it tracks, the US market's hours, a trade through Jupiter in USDC or SOL, its
+ * risk labels and the coins paired with it. The chart and the gap read the same proposed fields as the Stocks page.
+ */
+pages.stock = async () => {
+  const mint = params.get("mint");
+  const [quotes, launches] = mint ? await Promise.all([read("/v1/quotes"), read(`/v1/launches?quote=${mint}&limit=8`)]) : [];
+  const s = quotes?.quotes.find((q) => q.mint === mint && q.category === "tokenized_stock");
+  if (!s) return show($("[data-empty]"));
+  document.title = `${s.symbol} · Stoker`;
+  const usd = Number(s.price?.usd ?? 0);
+  $("[data-stock-tile]").outerHTML = tile(s.logo, s.symbol, "tile tile-lg asset-tile");
+  $("[data-stock-ticker]").textContent = s.symbol;
+  $("[data-stock-name]").textContent = [s.name, ISSUERS[s.issuer]].filter(Boolean).join(" · ");
+  $("[data-stock-price]").textContent = usd ? money(usd) : "";
+  const [c, dir] = change(s.change24h, 2);
+  Object.assign($("[data-stock-change]"), { textContent: c, className: dir });
+  const g = gap(s);
+  if (g.text) {
+    const under = $("[data-stock-under]");
+    under.textContent = `${s.market.ticker} ${usMarket().open ? "" : "closed at "}${money(s.market.last.price)} · ${g.text} vs stock`;
+    if (g.wide) under.classList.add("gap-wide");
+    show(under);
+  }
+  marketHours($("[data-hours]"));
+
+  // Chart: the last day or five, from hourly candles.
+  const closes = (await read(`/v1/quotes/${s.mint}/candles?interval=1h`))?.candles.map((k) => k.close) ?? [];
+  if (closes.length >= 2) {
+    const draw = () => lineChart($("[data-chart]"), closes.slice(-Number(checked("range"))));
+    $("[data-range]").addEventListener("change", draw);
+    draw();
+    show($('[data-live="chart"]'));
+  }
+
+  $("[data-stock-labels]").innerHTML = labelList(s);
+  const paired = launches?.launches.filter((l) => l.quote.mint === s.mint) ?? [];
+  const stoke = $("[data-stock-stoke]");
+  stoke.href = link(`/launch?quote=${s.mint}`);
+  if (paired.length) {
+    coinTable($("[data-coins]"), paired, { compact: true });
+    show($('[data-live="paired"]'));
+  } else stoke.textContent = "Stoke the first";
+
+  // Trade: through Jupiter, paid in or paid out as USDC or SOL; the estimate is the price less the Swap page's fee.
+  const usdOf = (symbol) => Number(quotes.quotes.find((q) => q.symbol === symbol)?.price?.usd ?? 0);
+  $("[data-fee]").textContent = pct(SWAP_FEE_BPS);
+  const estimate = () => {
+    const value = Number($("[data-amount]").value.replace(/,/g, ""));
+    const sell = checked("side") === "sell";
+    const other = checked("with");
+    const otherUsd = usdOf(other);
+    const ok = value > 0 && usd > 0 && otherUsd > 0;
+    $("[data-estimate]").hidden = !ok;
+    if (!ok) return;
+    const out = (sell ? value * usd / otherUsd : value * otherUsd / usd) * (1 - SWAP_FEE_BPS / 10_000);
+    const unit = sell ? other : s.symbol;
+    $("[data-get]").textContent = `${amount(out)} ${unit}`;
+    $("[data-min]").textContent = `${amount(out * (1 - Number(checked("slip")) / 10_000))} ${unit}`;
+  };
+  const update = () => {
+    const sell = checked("side") === "sell";
+    $("[data-with-label]").textContent = sell ? "Receive" : "Pay with";
+    $("[data-pay-token]").textContent = sell ? s.symbol : checked("with");
+    const presets = sell ? ["25%", "50%", "All"] : checked("with") === "SOL" ? ["0.5", "1", "5"] : ["100", "500", "1000"];
+    $("[data-presets]").innerHTML = presets.map((v) => `<button type="button" value="${v}">${Number(v) ? Number(v).toLocaleString("en-US") : v}</button>`).join("");
+    estimate();
+  };
+  $("[data-trade]").addEventListener("change", update);
+  $("[data-amount]").addEventListener("input", estimate);
+  $("[data-presets]").addEventListener("click", (e) => {
+    const v = e.target.closest("button")?.value;
+    if (!v) return;
+    // A share of the holding needs the wallet's balance, which comes with the wallet.
+    $("[data-amount]").value = Number(v) ? v : "";
+    estimate();
+  });
+  update();
+
+  const facts = [
+    ["Tracks", s.market ? `${esc(s.market.ticker)} on ${esc(s.market.venue)}` : ""],
+    ["Issuer", ISSUERS[s.issuer] ?? ""],
+    ["Liquidity", s.liquidityUsd ? `$${short(s.liquidityUsd)}` : ""],
+    ["In SOL", s.price ? price(Number(s.price.sol)) : ""],
+    ["Token program", s.tokenProgram.startsWith("Tokenz") ? "Token-2022" : "SPL Token"],
+    ["Mint", `<a class="link" href="${solscan("token", s.mint)}">${shortAddress(s.mint)}</a>`],
+  ].filter(([, v]) => v);
+  $("[data-stock-facts]").innerHTML = facts.map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join("");
+  show($('[data-live="stock"]'));
 };
 
 pages.rewards = async () => {

@@ -7,7 +7,10 @@ description: One asset a coin can be priced in: its price, its graduation target
   <header class="coin-head">
     <span data-asset-tile></span>
     <div><h1 data-asset-ticker></h1><p class="muted" data-asset-name></p></div>
-    <a class="button button-lg coin-price-action" href="/launch" data-asset-launch></a>
+    <div class="asset-actions coin-price-action">
+      <a class="arrow" href="/stocks" data-asset-trade hidden></a>
+      <a class="button button-lg" href="/launch" data-asset-launch></a>
+    </div>
   </header>
   <div class="coin-grid">
     <div class="coin-main">

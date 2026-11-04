@@ -1,0 +1,79 @@
+---
+route: /stock
+title: Stock
+description: A tokenized stock on Solana: its price beside the stock it tracks, its issuer and risk labels, and a trade.
+---
+<div class="shell" data-live="stock" hidden>
+  <header class="coin-head">
+    <span data-stock-tile></span>
+    <div>
+      <h1 data-stock-ticker></h1>
+      <p class="muted" data-stock-name></p>
+    </div>
+    <div class="coin-price">
+      <b data-stock-price></b>
+      <span data-stock-change></span>
+      <span class="under" data-stock-under hidden></span>
+    </div>
+  </header>
+  <div class="hours hours-row" data-hours hidden></div>
+
+  <div class="coin-grid">
+    <div class="coin-main">
+      <section class="panel pad" aria-label="Price" data-live="chart" hidden>
+        <div class="section-head chart-head">
+          <div class="seg" role="radiogroup" aria-label="Range" data-range>
+            <label><input type="radio" name="range" value="24" checked>1D</label><label><input type="radio" name="range" value="120">5D</label>
+          </div>
+        </div>
+        <svg class="chart" viewBox="0 0 100 100" preserveAspectRatio="none" data-chart aria-hidden="true"></svg>
+      </section>
+
+      <section class="panel pad" aria-labelledby="labels-title">
+        <div class="section-head"><h2 id="labels-title">Risk labels</h2></div>
+        <ul class="labels" data-stock-labels></ul>
+      </section>
+
+      <section aria-labelledby="paired-title">
+        <div class="section-head"><h2 id="paired-title">Coins paired with it</h2><a class="arrow" href="/launch" data-stock-stoke>Stoke one</a></div>
+        <div class="panel table-wrap" data-live="paired" hidden><table class="table" data-coins></table></div>
+      </section>
+    </div>
+
+    <aside>
+      <form class="panel pad trade" data-trade onsubmit="return false">
+        <div class="seg" role="radiogroup" aria-label="Side">
+          <label><input type="radio" name="side" value="buy" checked>Buy</label><label><input type="radio" name="side" value="sell">Sell</label>
+        </div>
+        <div class="slip">
+          <span id="with-label" data-with-label>Pay with</span>
+          <div class="seg" role="radiogroup" aria-labelledby="with-label">
+            <label><input type="radio" name="with" value="USDC" checked>USDC</label><label><input type="radio" name="with" value="SOL">SOL</label>
+          </div>
+        </div>
+        <label class="amount"><input inputmode="decimal" placeholder="0" aria-label="Amount" data-amount><span class="token" data-pay-token>USDC</span></label>
+        <div class="presets" data-presets></div>
+        <div class="slip">
+          <span id="slip-label">Slippage</span>
+          <div class="seg" role="radiogroup" aria-labelledby="slip-label">
+            <label><input type="radio" name="slip" value="50">0.5%</label><label><input type="radio" name="slip" value="100" checked>1%</label><label><input type="radio" name="slip" value="200">2%</label><label><input type="radio" name="slip" value="500">5%</label>
+          </div>
+        </div>
+        <dl class="kv" data-estimate hidden>
+          <div><dt>You get about</dt><dd data-get></dd></div>
+          <div><dt>At least</dt><dd data-min></dd></div>
+          <div><dt>Fee</dt><dd><a class="link" href="/fees#swap" data-fee></a></dd></div>
+        </dl>
+        <button class="button button-lg button-block" type="button" data-wallet>Connect wallet</button>
+        <p class="note">A token can trade at a gap to its stock. Nothing here is investment advice.</p>
+      </form>
+
+      <dl class="panel pad kv" data-stock-facts></dl>
+    </aside>
+  </div>
+</div>
+
+<div class="shell band" data-empty hidden>
+  <p class="statement">This stock isn't listed.</p>
+  <p class="actions"><a class="button button-lg" href="/stocks">All stocks</a></p>
+</div>

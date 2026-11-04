@@ -1,0 +1,24 @@
+---
+route: /stocks
+title: Stocks
+description: Tokenized stocks on Solana, open around the clock: each one's price, its gap to the stock it tracks, its liquidity and issuer.
+---
+<div class="shell page-head">
+  <h1>Stocks</h1>
+  <div class="hours" data-hours hidden></div>
+</div>
+<div class="shell section flush">
+  <div class="toolbar">
+    <label class="search"><span class="visually-hidden">Search</span><input class="input" type="search" placeholder="Company or ticker" maxlength="64" data-search><kbd class="kbd" aria-hidden="true">/</kbd></label>
+    <div class="seg" role="radiogroup" aria-label="Sort" data-sort>
+      <label><input type="radio" name="sort" value="liquidity" checked>Liquidity</label>
+      <label data-sort-change hidden><input type="radio" name="sort" value="change">24h change</label>
+      <label><input type="radio" name="sort" value="name">A–Z</label>
+    </div>
+  </div>
+  <div class="chips gap-b" role="radiogroup" aria-label="Issuer" data-issuers hidden></div>
+  <div class="panel table-wrap" data-live="stocks" hidden><table class="table" data-stocks></table></div>
+  <div class="band" data-empty hidden>
+    <p class="statement">Nothing matches.</p>
+  </div>
+</div>

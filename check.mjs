@@ -16,8 +16,8 @@ const routes = await build();
 const fixture = JSON.parse(await readFile(join(dist, "fixture.json"), "utf8"));
 const coin = fixture["/v1/launches"].launches[0].mint;
 const asset = fixture["/v1/quotes"].quotes.find((q) => q.symbol === "NVDAx").mint;
-const query = { "/coin": `mint=${coin}`, "/asset": `mint=${asset}` };
-const live = new Set(["/", "/coins", "/coin", "/assets", "/asset", "/revenue", "/burns", "/announcements", "/api"]);
+const query = { "/coin": `mint=${coin}`, "/asset": `mint=${asset}`, "/stock": `mint=${asset}` };
+const live = new Set(["/", "/coins", "/coin", "/stocks", "/stock", "/assets", "/asset", "/revenue", "/burns", "/announcements", "/api"]);
 
 const types = { ".html": "text/html", ".css": "text/css", ".js": "text/javascript", ".json": "application/json", ".svg": "image/svg+xml" };
 const server = createServer(async (req, res) => {

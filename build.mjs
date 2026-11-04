@@ -39,7 +39,9 @@ export async function build() {
     if (!head) throw new Error(`${file}: missing front matter`);
     const meta = Object.fromEntries(head.split("\n").map((l) => [l.slice(0, l.indexOf(":")).trim(), l.slice(l.indexOf(":") + 1).trim()]));
     const route = meta.route;
-    const section = "/" + route.split("/")[1];
+    // A detail page belongs to its list's section: a coin to Explore, an asset to Assets, a stock to Stocks.
+    const top = "/" + route.split("/")[1];
+    const section = { "/coin": "/coins", "/asset": "/assets", "/stock": "/stocks" }[top] ?? top;
     let html = layout
       .replaceAll("{{title}}", meta.title ? `${meta.title} · Stoker` : "Stoker · Launch a coin on Solana priced in the asset you pick")
       .replaceAll("{{description}}", meta.description ?? "")

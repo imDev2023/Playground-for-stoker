@@ -35,13 +35,27 @@ The pages read Stoker's public API (`https://api.stoker.markets/v1`). That API o
 
 ## Pages
 
-Home, Explore (`/coins`), a coin (`/coin/?mint=`), Stoke a coin (`/launch`), Swap, Assets, an asset (`/asset/?mint=`), Holder rewards, Curated, Stats (`/revenue`), Burn and Flywheel (`/burns`), Fee changes (`/announcements`), Developers (`/api`), Fees, Terms, Privacy, Risk disclosure and 404.
+Home, Explore (`/coins`), a coin (`/coin/?mint=`), Stocks (`/stocks`), a stock (`/stock/?mint=`), Stoke a coin (`/launch`), Swap, Assets, an asset (`/asset/?mint=`), Holder rewards, Curated, Stats (`/revenue`), Burn and Flywheel (`/burns`), Fee changes (`/announcements`), Developers (`/api`), Fees, Terms, Privacy, Risk disclosure and 404.
 
-A coin and an asset take their mint as `?mint=` because a static site can't serve `/coin/<mint>`. Production's own routes stay as they are.
+A coin, a stock and an asset take their mint as `?mint=` because a static site can't serve `/coin/<mint>`. Production's own routes stay as they are. Stocks and a stock are new: production has neither.
 
 Not redesigned: the creator dashboard, the operator console, a wallet's rewards and a single reward round. They are reached from a connected wallet or an admin key.
 
-The wallet buttons and the Swap card are designed but not wired: connecting a wallet, signing, and Jupiter's swap belong to the production app.
+The wallet buttons, the Swap card and the stock trade panel are designed but not wired: connecting a wallet, signing, and Jupiter's swap belong to the production app.
+
+## Stocks
+
+Every tokenized stock in the Quote Registry, traded through Jupiter in USDC or SOL at the Swap page's fee, open on Solana while the US market is shut. The list sorts by liquidity, 24h change or name and filters by issuer; a stock's page shows its price beside the stock it tracks, the US market's hours, a trade, its risk labels and the coins paired with it.
+
+They read three things production's API doesn't serve yet. Until it does, each part they feed stays hidden and the rest of the page works:
+
+| Proposed | Shape | Feeds |
+| --- | --- | --- |
+| `change24h` on a Quote Asset | A fraction, as on a launch's market (0.012 is up 1.2%) | The 24h column and sort, and the change under a stock's price |
+| `market.last` on a Quote Asset | `{ price, at }`: the tracked stock's last price in USD, from a market data source | The "vs stock" gap, highlighted from 1% either way |
+| `GET /v1/quotes/:mint/candles?interval=1h` | A `CandleList`, the shape launches already use | The trend lines and a stock's chart |
+
+The US market's hours are worked out in the browser from New York time and the exchanges' holiday calendar in `src/lib.js`, which lists 2026 and 2027 and needs extending each year.
 
 ## Design
 
